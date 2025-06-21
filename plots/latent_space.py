@@ -13,7 +13,7 @@ def plot_latent_space(neural_network: NeuralNetwork, X, labels):
     fig = plt.figure(figsize=(8,6))
     for i, point in enumerate(latent_vectors):
         plt.scatter(point[0], point[1], marker='o')
-        plt.text(point[0] + 0.01, point[1] + 0.01, labels[i], fontsize=9)
+        plt.text(point[0], point[1] + 0.005, labels[i], fontsize=9, ha='center', va='bottom')
     plt.title("Espacio latente (2D) de las letras")
     plt.xlabel("Latente 1")
     plt.ylabel("Latente 2")
