@@ -6,17 +6,50 @@ from utils.error_functions import ErrorFunctionType
 from utils.optimizers import OptimizerFunctionType
 
 class NeuralNetwork:
-    def __init__(self, x_values:List[List[int]], hidden_layers_neuron_amounts:List[int], activation_function:ActivationFunctionType, prime_activation_function:ActivationFunctionType, seed:int):
+    # Note: hidden_layers_neuron_amounts actually means all layers (not just hidden layers)
+    def __init__(self, x_values:List[List[int]], hidden_layers_neuron_amounts:List[int],
+                 activation_function:ActivationFunctionType, prime_activation_function:ActivationFunctionType,
+                 output_layer_activation_function:ActivationFunctionType, output_layer_prime_activation_function:ActivationFunctionType, seed:int):
+
         self.seed = seed
-        self.layers = [ Layer(len(x_values[0]), hidden_layers_neuron_amounts[current_layer_index-1] if current_layer_index > 0 else len(x_values[0]), current_layer_neuron_amount, activation_function, prime_activation_function, seed) for current_layer_index, current_layer_neuron_amount in enumerate(hidden_layers_neuron_amounts)]
+        self.layers = []
         self.x_values = x_values
-        self.weight_matrixes = []
-        for layer in self.layers:
-            self.weight_matrixes.append(layer.weights_matrix)
+
+        input_size = len(x_values[0])
+        previous_layer_neurons = input_size
+
+        # Hidden layers
+        for current_layer_neuron_amount in hidden_layers_neuron_amounts[:-1]: 
+            layer = Layer(
+                num_inputs=previous_layer_neurons,                
+                num_previous_layer_neurons=previous_layer_neurons,
+                num_neurons=current_layer_neuron_amount,
+                activation_function=activation_function,
+                prime_activation_function=prime_activation_function,
+                seed=seed
+            )
+            self.layers.append(layer)
+            previous_layer_neurons = current_layer_neuron_amount 
+
+        # Output layer
+        output_layer = Layer(
+            num_inputs=previous_layer_neurons,
+            num_previous_layer_neurons=previous_layer_neurons,
+            num_neurons=len(x_values[0]),  
+            activation_function=output_layer_activation_function,
+            prime_activation_function=output_layer_prime_activation_function,
+            seed=seed
+        )
+
+        self.layers.append(output_layer)
+
+        self.weight_matrixes = [layer.weights_matrix for layer in self.layers]
+
 
     def predict(self, input_values:List[int], beta:float=1.0):
         a_j_vector = input_values
         for layer in self.layers:
+            print(f"Layer: {layer} - Activation Function: {layer.activation_function.__name__}")
             a_j_vector = layer.forward(a_j_vector, beta)
         return a_j_vector
     

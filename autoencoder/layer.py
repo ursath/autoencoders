@@ -15,7 +15,7 @@ class Layer:
         self.h_j_values = None
         self.neurons: list[MultiLayerPerceptron] = []
         for i in range(num_neurons):
-            perceptron = MultiLayerPerceptron(num_inputs, activation_function)
+            perceptron = MultiLayerPerceptron(num_previous_layer_neurons, activation_function)
             self.neurons.append(perceptron)
 
     def forward(self, inputs, beta=1.0):

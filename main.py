@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     network_configurations = autoencoder_config['architecture']
     activation_functions = [activation_functions_map[name] for name in autoencoder_config['hidden_layers_activation_functions']]
-    output_layer_activation_function = autoencoder_config['output_layer_activation_function']
+    output_layer_activation_function = [activation_functions_map[name] for name in autoencoder_config['output_layer_activation_function']]
     optimizer = optimizers_map[autoencoder_config['optimizer']]
     error_functions = [error_functions_map[name] for name in autoencoder_config['error_functions']]
     epochs = autoencoder_config['epochs']
@@ -60,7 +60,7 @@ if __name__ == "__main__":
                         for learning_rate in learning_rates:
                             for total_epochs in epochs:
 
-                                neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], seed)
+                                neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], seed)
                                 breaking_epoch, training_error = neural_network.backpropagate(X_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta=1.0)
                                 X_values_prime = neural_network.reconstruct_all(X_values)
                                 

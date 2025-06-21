@@ -4,7 +4,7 @@
       "architecture": [[35, 10, 2, 10, 35]],
       "X_range": [25, 31 ],
       "hidden_layers_activation_functions": ["tanh"],
-      "output_layer_activation_function": "logistic",
+      "output_layer_activation_function": ["logistic"],
       "optimizer": "gradient_descent",
       "error_functions": ["mean_squared_error"],
       "epochs": [100],

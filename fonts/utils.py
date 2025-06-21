@@ -17,6 +17,11 @@ def get_all_font_vectors(font_data):
 
 
 def plot_font_pair(original, reconstructed, character):
+
+    folder_path = "results/characters"
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
     cmap = plt.get_cmap('binary')
 
     original_character_template = original.reshape(7, 5)
