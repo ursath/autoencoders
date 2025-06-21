@@ -23,6 +23,13 @@ class NeuralNetwork:
     def reconstruct_all(self, input_values:List[int], beta=1.0):
         return np.array([self.predict(x, beta) for x in input_values])
     
+    def encode_to_latent_space(self, input_values: List[int], beta: float = 1.0) -> np.ndarray:
+        a_j_vector = input_values
+        for layer in self.layers:
+            a_j_vector = layer.forward(a_j_vector, beta)
+            if len(layer.a_j_values) == 2:  # llego a la capa latente
+                return a_j_vector
+    
     def backpropagate(self, input_values:List[List[int]], learning_rate:float, epochs:int, optimizer:OptimizerFunctionType, error_function:ErrorFunctionType, max_acceptable_error:float, is_adam_optimizer=False, activation_function= "", activation_beta:float= 1.0, alpha:float= 0.0):
         m_k_matrixes = []
         v_k_matrixes = []

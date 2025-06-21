@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 def to_bin_array(encoded_caracter):
     bin_array = np.zeros((7, 5), dtype=int)
@@ -15,7 +16,7 @@ def get_all_font_vectors(font_data):
     return np.array([to_bin_array(c).flatten() for c in font_data])
 
 
-def plot_font_pair(original, reconstructed):
+def plot_font_pair(original, reconstructed, character):
     cmap = plt.get_cmap('binary')
 
     original_character_template = original.reshape(7, 5)
@@ -27,4 +28,20 @@ def plot_font_pair(original, reconstructed):
     sns.heatmap(reconstructed_character_template, ax=axes[1], cbar=False, square=True, cmap=cmap, linecolor='k', linewidth=0.2)
     axes[1].set_title(f"Reconstrucción")
     plt.tight_layout()
-    plt.show()
+
+    output_path = os.path.join("results/characters", f"{character}.png")
+    plt.savefig(output_path)
+    plt.close(fig) 
+
+def pixel_array_to_char(vector, font_data):
+    all_vectors = get_all_font_vectors(font_data)
+    invalid_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
+
+    for i, font_vector in enumerate(all_vectors):
+        if np.array_equal(vector, font_vector):
+            character = chr(0x60 + i)
+            if character in invalid_chars:
+                return f"char_{ord(character)}"
+            else:
+                return character
+    return None
