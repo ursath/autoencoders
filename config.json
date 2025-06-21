@@ -1,0 +1,12 @@
+{
+    "autoencoder": {
+
+      "architecture": [[35, 2, 35]],
+      "X_range": [2, 4],
+      "hidden_layers_activation_functions": ["tanh"],
+      "output_layer_activation_function": "sigmoid",
+      "error_functions": ["mean_error"],
+      "epochs": [10000],
+      "learning_rates": [0.1]
+    }
+}
