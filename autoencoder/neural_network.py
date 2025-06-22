@@ -4,6 +4,7 @@ from .layer import Layer
 from utils.activation_functions import ActivationFunctionType
 from utils.error_functions import ErrorFunctionType
 from utils.optimizers import OptimizerFunctionType
+from utils.stats import Statistics
 
 class NeuralNetwork:
     # Note: hidden_layers_neuron_amounts actually means all layers (not just hidden layers)
@@ -14,6 +15,15 @@ class NeuralNetwork:
         self.seed = seed
         self.layers = []
         self.x_values = x_values
+
+        filename = (
+            f"layers_{'-'.join(map(str, hidden_layers_neuron_amounts))}_"
+            f"act_{activation_function.__name__}_"
+            f"outact_{output_layer_activation_function.__name__}_"
+            f"seed_{seed}"
+        )
+
+        self.stats = Statistics(filename)
 
         input_size = len(x_values[0])
         previous_layer_neurons = input_size
@@ -49,7 +59,6 @@ class NeuralNetwork:
     def predict(self, input_values:List[int], beta:float=1.0):
         a_j_vector = input_values
         for layer in self.layers:
-            print(f"Layer: {layer} - Activation Function: {layer.activation_function.__name__}")
             a_j_vector = layer.forward(a_j_vector, beta)
         return a_j_vector
     
@@ -138,6 +147,7 @@ class NeuralNetwork:
                 errors.append(basic_error)
             
             network_error = error_function(np.array(errors))
+            self.stats.write(f"{epoch+1},{network_error}")
             print(f"Epoch {epoch+1}/{epochs}, Network Error: {network_error}")
 
             if network_error < max_acceptable_error:
