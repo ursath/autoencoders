@@ -1,7 +1,7 @@
 {
     "autoencoder_configurations": [
         {
-            "architecture": [24, 16, 8, 2, 8, 16, 24],
+            "architecture": [35, 24, 16, 8, 2, 8, 16, 24, 35],
             "X_range": [0, 5],
             "hidden_layers_activation_functions": "tanh",
             "output_layer_activation_function": "tanh",
@@ -11,27 +11,17 @@
             "learning_rates": 0.01
         }, 
         {
-            "architecture": [24, 16, 8, 2, 8, 16, 24],
+            "architecture": [35, 24, 16, 8, 2, 8, 16, 24, 35],
             "X_range": [0, 5],
-            "hidden_layers_activation_functions": "logistic",
-            "output_layer_activation_function": "tanh",
+            "hidden_layers_activation_functions": "relu",
+            "output_layer_activation_function": "logistic",
             "optimizer": "gradient_descent",
             "error_functions": "mean_squared_error",
             "epochs": 10000,
             "learning_rates": 0.01
         },
         {
-            "architecture": [30, 25, 20, 15, 10, 5, 2, 5, 10, 15, 20, 25, 30],
-            "X_range": [0, 5],
-            "hidden_layers_activation_functions": "logistic",
-            "output_layer_activation_function": "tanh",
-            "optimizer": "gradient_descent",
-            "error_functions": "mean_squared_error",
-            "epochs": 10000,
-            "learning_rates": 0.01
-        },
-        {
-            "architecture": [16, 8, 2, 8, 16],
+            "architecture": [35, 30, 25, 20, 15, 10, 5, 2, 5, 10, 15, 20, 25, 30, 35],
             "X_range": [0, 5],
             "hidden_layers_activation_functions": "tanh",
             "output_layer_activation_function": "tanh",
@@ -41,7 +31,7 @@
             "learning_rates": 0.01
         },
         {
-            "architecture": [10, 2, 10],
+            "architecture": [35, 16, 8, 2, 8, 16, 35],
             "X_range": [0, 5],
             "hidden_layers_activation_functions": "tanh",
             "output_layer_activation_function": "tanh",
@@ -51,17 +41,27 @@
             "learning_rates": 0.01
         },
         {
-            "architecture": [16, 8, 2, 8, 16],
+            "architecture": [35, 10, 2, 10, 35],
             "X_range": [0, 5],
             "hidden_layers_activation_functions": "tanh",
             "output_layer_activation_function": "tanh",
-            "optimizer": "momentum",
+            "optimizer": "gradient_descent",
             "error_functions": "mean_squared_error",
             "epochs": 10000,
             "learning_rates": 0.01
         },
         {
-            "architecture": [16, 8, 2, 8, 16],
+            "architecture": [35, 16, 8, 2, 8, 16, 35],
+            "X_range": [0, 5],
+            "hidden_layers_activation_functions": "tanh",
+            "output_layer_activation_function": "relu",
+            "optimizer": "gradient_descent",
+            "error_functions": "mean_squared_error",
+            "epochs": 10000,
+            "learning_rates": 0.01
+        },
+                {
+            "architecture": [35, 16, 8, 2, 8, 16, 35],
             "X_range": [0, 5],
             "hidden_layers_activation_functions": "relu",
             "output_layer_activation_function": "tanh",
@@ -71,7 +71,7 @@
             "learning_rates": 0.01
         },
         {
-            "architecture": [16, 8, 2, 8, 16],
+            "architecture": [35, 16, 8, 2, 8, 16, 35],
             "X_range": [0, 5],
             "hidden_layers_activation_functions": "tanh",
             "output_layer_activation_function": "tanh",
@@ -81,7 +81,7 @@
             "learning_rates": 0.01
         },
         {
-            "architecture": [16, 8, 2, 8, 16],
+            "architecture": [35, 16, 8, 2, 8, 16, 35],
             "X_range": [0, 5],
             "hidden_layers_activation_functions": "tanh",
             "output_layer_activation_function": "tanh",
@@ -91,17 +91,17 @@
             "learning_rates": 0.01
         },
         {
-            "architecture": [16, 8, 2, 8, 16],
-            "X_range": [0, 8],
+            "architecture": [35, 16, 8, 2, 8, 16, 35],
+            "X_range": [0, 5],
             "hidden_layers_activation_functions": "tanh",
             "output_layer_activation_function": "tanh",
-            "optimizer": "adam",
+            "optimizer": "momentum",
             "error_functions": "mean_squared_error",
             "epochs": 10000,
             "learning_rates": 0.01
         },
         {
-            "architecture": [16, 8, 2, 8, 16],
+            "architecture": [35, 16, 8, 2, 8, 16, 35],
             "X_range": [0, 16],
             "hidden_layers_activation_functions": "tanh",
             "output_layer_activation_function": "tanh",
@@ -110,9 +110,19 @@
             "epochs": 10000,
             "learning_rates": 0.01
         },
+                {
+            "architecture": [35, 16, 8, 2, 8, 16, 35],
+            "X_range": [0, 16],
+            "hidden_layers_activation_functions": "tanh",
+            "output_layer_activation_function": "logistic",
+            "optimizer": "gradient_descent",
+            "error_functions": "mean_squared_error",
+            "epochs": 10000,
+            "learning_rates": 0.01
+        },
         {
-            "architecture": [16, 8, 2, 8, 16],
-            "X_range": [0, 24],
+            "architecture": [35, 16, 8, 2, 8, 16, 35],
+            "X_range": [0, 32],
             "hidden_layers_activation_functions": "tanh",
             "output_layer_activation_function": "tanh",
             "optimizer": "gradient_descent",
@@ -121,8 +131,8 @@
             "learning_rates": 0.01
         },
         {
-            "architecture": [16, 8, 2, 8, 16],
-            "X_range": [0, 24],
+            "architecture": [35, 16, 8, 2, 8, 16, 35],
+            "X_range": [0, 32],
             "hidden_layers_activation_functions": "tanh",
             "output_layer_activation_function": "logistic",
             "optimizer": "gradient_descent",

@@ -5,13 +5,12 @@ from utils.activation_functions import ActivationFunctionType
 from utils.error_functions import ErrorFunctionType
 from utils.optimizers import OptimizerFunctionType
 from utils.stats import Statistics
-from datetime import datetime
 
 class NeuralNetwork:
     # Note: hidden_layers_neuron_amounts actually means all layers (not just hidden layers)
     def __init__(self, x_values:List[List[int]], hidden_layers_neuron_amounts:List[int],
                  activation_function:ActivationFunctionType, prime_activation_function:ActivationFunctionType,
-                 output_layer_activation_function:ActivationFunctionType, output_layer_prime_activation_function:ActivationFunctionType, seed:int):
+                 output_layer_activation_function:ActivationFunctionType, output_layer_prime_activation_function:ActivationFunctionType, optimizer:str, seed:int):
 
         self.seed = seed
         self.layers = []
@@ -20,10 +19,9 @@ class NeuralNetwork:
         filename = (
             f"layers_{'-'.join(map(str, hidden_layers_neuron_amounts))}_"
             f"act_{activation_function.__name__}_"
-            f"inact_{prime_activation_function.__name__}_"
             f"outact_{output_layer_activation_function.__name__}_"
-            f"seed_{seed}"
-            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            f"seed_{seed}_"
+            f"{optimizer}"
         )
 
         self.stats = Statistics(filename)
