@@ -2,12 +2,22 @@
     "autoencoder": {
 
       "architecture": [[35, 10, 2, 10, 35]],
-      "X_range": [25, 31 ],
+      "X_range": [2, 10 ],
       "hidden_layers_activation_functions": ["tanh"],
       "output_layer_activation_function": "logistic",
       "optimizer": "gradient_descent",
       "error_functions": ["mean_squared_error"],
-      "epochs": [100],
+      "epochs": [10000],
       "learning_rates": [0.01]
+    },
+
+    "problem": {
+      "name": "normal",
+      "font_data": "font_3",
+      "denoising_options": {
+        "noise_level": 0.4,
+        "noise_function": "gaussian"
+      }
+
     }
 }

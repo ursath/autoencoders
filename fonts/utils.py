@@ -23,9 +23,9 @@ def plot_font_pair(original, reconstructed, character):
     reconstructed_character_template = reconstructed.reshape(7, 5)
 
     fig, axes = plt.subplots(1, 2, figsize=(6, 3))
-    sns.heatmap(original_character_template, ax=axes[0], cbar=False, square=True, cmap=cmap, linecolor='k', linewidth=0.2)
+    sns.heatmap(original_character_template, ax=axes[0], cbar=False, square=True, cmap=cmap, linecolor='k', linewidth=0, xticklabels=False, yticklabels=False)
     axes[0].set_title(f"Original")
-    sns.heatmap(reconstructed_character_template, ax=axes[1], cbar=False, square=True, cmap=cmap, linecolor='k', linewidth=0.2)
+    sns.heatmap(reconstructed_character_template, ax=axes[1], cbar=False, square=True, cmap=cmap, linecolor='k', linewidth=0, xticklabels=False, yticklabels=False)
     axes[1].set_title(f"Reconstrucción")
     plt.tight_layout()
 
@@ -33,13 +33,13 @@ def plot_font_pair(original, reconstructed, character):
     plt.savefig(output_path)
     plt.close(fig) 
 
-def pixel_array_to_char(vector, font_data):
+def pixel_array_to_char(vector, font_data, first_char=0x60):
     all_vectors = get_all_font_vectors(font_data)
     invalid_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
 
     for i, font_vector in enumerate(all_vectors):
         if np.array_equal(vector, font_vector):
-            character = chr(0x60 + i)
+            character = chr(first_char + i)
             if character in invalid_chars:
                 return f"char_{ord(character)}"
             else:

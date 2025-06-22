@@ -30,15 +30,15 @@ class NeuralNetwork:
             if len(layer.a_j_values) == 2:  # llego a la capa latente
                 return a_j_vector
     
-    def backpropagate(self, input_values:List[List[int]], learning_rate:float, epochs:int, optimizer:OptimizerFunctionType, error_function:ErrorFunctionType, max_acceptable_error:float, is_adam_optimizer=False, activation_function= "", activation_beta:float= 1.0, alpha:float= 0.0):
+    def backpropagate(self, input_values:List[List[int]], target_values:List[List[int]], learning_rate:float, epochs:int, optimizer:OptimizerFunctionType, error_function:ErrorFunctionType, max_acceptable_error:float, is_adam_optimizer=False, activation_function= "", activation_beta:float= 1.0, alpha:float= 0.0):
         m_k_matrixes = []
         v_k_matrixes = []
         prev_delta_w_matrixes = []
         for epoch in range(epochs):
-            for input_vector in input_values:
+            for input_vector, target_vector in zip(input_values, target_values):
                 prediction = self.predict(input_vector)
 
-                basic_error = input_vector - prediction
+                basic_error = target_vector - prediction
                 
                 reverse_layers = self.layers[::-1]
 
@@ -99,9 +99,9 @@ class NeuralNetwork:
                                     layer.weights_matrix[j][i+1] += delta_w 
             
             errors = []
-            for input_vector in input_values:
+            for input_vector, target_vector in zip(input_values, target_values):
                 prediction = self.predict(input_vector)
-                basic_error = input_vector - prediction
+                basic_error = target_vector - prediction
                 errors.append(basic_error)
             
             network_error = error_function(np.array(errors))
