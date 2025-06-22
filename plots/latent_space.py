@@ -3,6 +3,10 @@ import numpy as np
 import os
 from autoencoder.neural_network import NeuralNetwork
 
+folder_path = "results"
+if not os.path.exists(folder_path):
+    os.makedirs(folder_path)
+
 def plot_latent_space(neural_network: NeuralNetwork, X, labels):
     latent_vectors = []
     for input_vector in X:

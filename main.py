@@ -7,6 +7,8 @@ from utils.optimizers import rosenblatt_optimizer, gradient_descent_optimizer_wi
 from utils.error_functions import mean_error, squared_error, mean_squared_error
 from plots.latent_space import plot_latent_space
 from utils.noise_functions import gaussian_noise, salt_and_pepper_noise
+from plots.plots import plot_epoch_network_error
+import os
 
 if __name__ == "__main__":
     
@@ -60,7 +62,7 @@ if __name__ == "__main__":
 
     network_configurations = autoencoder_config['architecture']
     activation_functions = [activation_functions_map[name] for name in autoencoder_config['hidden_layers_activation_functions']]
-    output_layer_activation_function = autoencoder_config['output_layer_activation_function']
+    output_layer_activation_function = [activation_functions_map[name] for name in autoencoder_config['output_layer_activation_function']]
     optimizer = optimizers_map[autoencoder_config['optimizer']]
     error_functions = [error_functions_map[name] for name in autoencoder_config['error_functions']]
     epochs = autoencoder_config['epochs']
@@ -102,8 +104,8 @@ if __name__ == "__main__":
                     for error_function in error_functions:
                         for learning_rate in learning_rates:
                             for total_epochs in epochs:
-
-                                neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], seed)
+                                   
+                                neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], seed)
                                 breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta=1.0)
                                 X_values_prime = neural_network.reconstruct_all(X_values)
                                 
@@ -115,6 +117,12 @@ if __name__ == "__main__":
                                 for( X_values, X_values_prime) in zip(X_values, X_values_prime):
                                     print(f"Input: {X_values}")
                                     print(f"Reconstructed: {X_values_prime}")
+
+                                if not os.path.exists("/stats/plots/"):
+                                    os.makedirs("stats/plots/", exist_ok=True)
+
+                                with open(neural_network.stats.filepath, 'r') as f:
+                                    plot_epoch_network_error(neural_network.stats, neural_network.stats.filepath.replace(".csv", ".png").replace("data/", "plots/"))
 
     if(optimizer == momentum_gradient_descent_optimizer_with_delta):
         maX_values_error = 0.1
