@@ -5,6 +5,7 @@ from utils.activation_functions import ActivationFunctionType
 from utils.error_functions import ErrorFunctionType
 from utils.optimizers import OptimizerFunctionType
 from utils.stats import Statistics
+from datetime import datetime
 
 class NeuralNetwork:
     # Note: hidden_layers_neuron_amounts actually means all layers (not just hidden layers)
@@ -19,8 +20,10 @@ class NeuralNetwork:
         filename = (
             f"layers_{'-'.join(map(str, hidden_layers_neuron_amounts))}_"
             f"act_{activation_function.__name__}_"
+            f"inact_{prime_activation_function.__name__}_"
             f"outact_{output_layer_activation_function.__name__}_"
             f"seed_{seed}"
+            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         )
 
         self.stats = Statistics(filename)
