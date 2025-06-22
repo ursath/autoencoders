@@ -8,6 +8,8 @@ from utils.activation_functions import relu, logistic, prime_logistic, relu_deri
 from utils.optimizers import rosenblatt_optimizer, gradient_descent_optimizer_with_delta, momentum_gradient_descent_optimizer_with_delta, adam_optimizer_with_delta
 from utils.error_functions import mean_error, squared_error, mean_squared_error
 from plots.latent_space import plot_latent_space
+from plots.plots import plot_epoch_network_error
+import os
 
 if __name__ == "__main__":
     
@@ -72,6 +74,12 @@ if __name__ == "__main__":
                                 for( X_values, X_values_prime) in zip(X_values, X_values_prime):
                                     print(f"Input: {X_values}")
                                     print(f"Reconstructed: {X_values_prime}")
+
+                                if not os.path.exists("/stats/plots/"):
+                                    os.makedirs("stats/plots/", exist_ok=True)
+
+                                with open(neural_network.stats.filepath, 'r') as f:
+                                    plot_epoch_network_error(neural_network.stats, neural_network.stats.filepath.replace(".csv", ".png").replace("data/", "plots/"))
 
     if(optimizer == momentum_gradient_descent_optimizer_with_delta):
         maX_values_error = 0.1

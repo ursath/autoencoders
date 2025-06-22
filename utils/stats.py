@@ -1,7 +1,7 @@
 import os
 
 class Statistics:
-    folder = "stats/"
+    folder = "stats/data/"
     def __init__(self, filename: str):
         self.filename = filename
         
@@ -20,3 +20,4 @@ class Statistics:
     def close(self):
         self.file.close()
         print(f"Statistics saved to {self.filepath}")
+
