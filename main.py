@@ -1,5 +1,5 @@
 from fonts.fonts import font_1, font_2, font_3
-from fonts.utils import get_all_font_vectors, plot_font_pair, pixel_array_to_char
+from fonts.utils import get_all_font_vectors, plot_font_pair, pixel_array_to_char, plot_font_grid
 import json
 from autoencoder.neural_network import NeuralNetwork
 from utils.activation_functions import relu, logistic, prime_logistic, relu_derivative, prime_tanh, tanh
@@ -111,8 +111,7 @@ if __name__ == "__main__":
                                 
                                 #plot_latent_space(neural_network, X_values, characters)
 
-                                for i in range(len(X_values)):
-                                    plot_font_pair(X_values[i], X_values_prime[i], characters[i])
+                                plot_font_grid(X_values, X_values_prime)
 
                                 for( X_values, X_values_prime) in zip(X_values, X_values_prime):
                                     print(f"Input: {X_values}")
@@ -132,12 +131,11 @@ if __name__ == "__main__":
                     for error_function in error_functions:
                         for learning_rate in learning_rates:
                             for total_epochs in epochs:
-                                neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], seed)
+                                neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], seed)
                                 breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 1.0, alpha= alpha)
                                 X_values_prime = neural_network.reconstruct_all(X_values)
 
-                                for i in range(len(X_values)):
-                                    plot_font_pair(X_values[i], X_values_prime[i], characters[i])
+                                plot_font_grid(X_values, X_values_prime)
 
                                 for( X_values, X_values_prime) in zip(X_values, X_values_prime):
                                     print(f"Input: {X_values}")
@@ -151,12 +149,11 @@ if __name__ == "__main__":
                     for error_function in error_functions:
                         for learning_rate in learning_rates:
                             for total_epochs in epochs:
-                                neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], seed)
+                                neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], seed)
                                 breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 0.9, alpha= alpha)
                                 X_values_prime = neural_network.reconstruct_all(X_values)
 
-                                for i in range(len(X_values)):
-                                    plot_font_pair(X_values[i], X_values_prime[i], characters[i])
+                                plot_font_grid(X_values, X_values_prime)
 
                                 for( X_values, X_values_prime) in zip(X_values, X_values_prime):
                                     print(f"Input: {X_values}")
