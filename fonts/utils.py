@@ -38,6 +38,62 @@ def plot_font_pair(original, reconstructed, character, prefix):
     plt.savefig(output_path)
     plt.close(fig) 
 
+
+
+def plot_font_grid(originals, outputs, pairs_per_row=5):
+
+    cmap = plt.get_cmap('binary')
+
+    num_pairs = len(originals)
+    num_rows = int(np.ceil(num_pairs / pairs_per_row))
+
+    fig, axes = plt.subplots(
+        num_rows, pairs_per_row * 2,
+        figsize=(pairs_per_row * 2, num_rows * 2)
+    )
+
+    if num_rows == 1:
+        axes = np.expand_dims(axes, axis=0)
+
+    for idx, (original, reconstructed) in enumerate(zip(originals, outputs)):
+        row = idx // pairs_per_row
+        col_base = (idx % pairs_per_row) * 2
+
+        original_template = original.reshape(7, 5)
+        reconstructed_template = reconstructed.reshape(7, 5)
+
+        # Original
+        sns.heatmap(
+            original_template,
+            ax=axes[row][col_base],
+            cbar=False,
+            square=True,
+            cmap=cmap,
+            linecolor='k',
+            linewidth=0,
+            xticklabels=False,
+            yticklabels=False
+        )
+
+        # Reconstrucción
+        sns.heatmap(
+            reconstructed_template,
+            ax=axes[row][col_base + 1],
+            cbar=False,
+            square=True,
+            cmap=cmap,
+            linecolor='k',
+            linewidth=0,
+            xticklabels=False,
+            yticklabels=False
+        )
+
+    plt.tight_layout()
+    output_path = os.path.join("results", f"grid.png")
+    plt.savefig(output_path)
+    plt.close(fig)
+
+
 def pixel_array_to_char(vector, font_data, first_char=0x60):
     all_vectors = get_all_font_vectors(font_data)
     invalid_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
