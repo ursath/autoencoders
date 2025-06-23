@@ -2,6 +2,7 @@ from fonts.fonts import font_1, font_2, font_3
 from fonts.utils import get_all_font_vectors, plot_font_pair, pixel_array_to_char, plot_font_grid
 import json
 from autoencoder.neural_network import NeuralNetwork
+from vae.variational_neural_network import VariationalNeuralNetwork
 from utils.activation_functions import relu, logistic, prime_logistic, relu_derivative, prime_tanh, tanh
 from utils.optimizers import rosenblatt_optimizer, gradient_descent_optimizer_with_delta, momentum_gradient_descent_optimizer_with_delta, adam_optimizer_with_delta
 from utils.error_functions import mean_error, squared_error, mean_squared_error
@@ -87,7 +88,7 @@ if __name__ == "__main__":
         noise_function = noise_functions_map[problem_config['denoising_options']['noise_function']]
         X_values = [noise_function(vector, noise_level) for vector in target_values]
     elif problem_type == "variational":
-        X_values = None
+        X_values = target_values
 
 
     # Asociación de caracteres a los vectores
@@ -96,66 +97,85 @@ if __name__ == "__main__":
     print(f"Caracteres asociados: {characters}")
 
     # Inicialización de la red neuronal y entrenamiento
+    if problem_type == "normal" or problem_type == "denoising":
+        if(optimizer == gradient_descent_optimizer_with_delta):
+            maX_values_error = 0.01
+            for network_configuration in network_configurations:
+                for activation_function in activation_functions:
+                        for error_function in error_functions:
+                            for learning_rate in learning_rates:
+                                for total_epochs in epochs:
 
-    if(optimizer == gradient_descent_optimizer_with_delta):
-        maX_values_error = 0.01
-        for network_configuration in network_configurations:
-            for activation_function in activation_functions:
-                    for error_function in error_functions:
-                        for learning_rate in learning_rates:
-                            for total_epochs in epochs:
-                                   
-                                neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], seed)
-                                breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta=1.0)
-                                X_values_prime = neural_network.reconstruct_all(X_values)
-                                
-                                #plot_latent_space(neural_network, X_values, characters)
+                                    neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], seed)
+                                    breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta=1.0)
+                                    X_values_prime = neural_network.reconstruct_all(X_values)
 
-                                plot_font_grid(X_values, X_values_prime)
+                                    #plot_latent_space(neural_network, X_values, characters)
 
-                                for( X_values, X_values_prime) in zip(X_values, X_values_prime):
-                                    print(f"Input: {X_values}")
-                                    print(f"Reconstructed: {X_values_prime}")
+                                    plot_font_grid(X_values, X_values_prime)
 
-                                if not os.path.exists("/stats/plots/"):
-                                    os.makedirs("stats/plots/", exist_ok=True)
+                                    for( X_values, X_values_prime) in zip(X_values, X_values_prime):
+                                        print(f"Input: {X_values}")
+                                        print(f"Reconstructed: {X_values_prime}")
 
-                                with open(neural_network.stats.filepath, 'r') as f:
-                                    plot_epoch_network_error(neural_network.stats, neural_network.stats.filepath.replace(".csv", ".png").replace("data/", "plots/"))
+                                    if not os.path.exists("/stats/plots/"):
+                                        os.makedirs("stats/plots/", exist_ok=True)
 
-    if(optimizer == momentum_gradient_descent_optimizer_with_delta):
-        maX_values_error = 0.1
-        alpha = 0.9
-        for network_configuration in network_configurations:
-            for activation_function in activation_functions:
-                    for error_function in error_functions:
-                        for learning_rate in learning_rates:
-                            for total_epochs in epochs:
-                                neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], seed)
-                                breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 1.0, alpha= alpha)
-                                X_values_prime = neural_network.reconstruct_all(X_values)
+                                    with open(neural_network.stats.filepath, 'r') as f:
+                                        plot_epoch_network_error(neural_network.stats, neural_network.stats.filepath.replace(".csv", ".png").replace("data/", "plots/"))
 
-                                plot_font_grid(X_values, X_values_prime)
+        if(optimizer == momentum_gradient_descent_optimizer_with_delta):
+            maX_values_error = 0.1
+            alpha = 0.9
+            for network_configuration in network_configurations:
+                for activation_function in activation_functions:
+                        for error_function in error_functions:
+                            for learning_rate in learning_rates:
+                                for total_epochs in epochs:
+                                    neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], seed)
+                                    breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 1.0, alpha= alpha)
+                                    X_values_prime = neural_network.reconstruct_all(X_values)
 
-                                for( X_values, X_values_prime) in zip(X_values, X_values_prime):
-                                    print(f"Input: {X_values}")
-                                    print(f"Reconstructed: {X_values_prime}")
-                                
-    if(optimizer == adam_optimizer_with_delta):
+                                    plot_font_grid(X_values, X_values_prime)
+
+                                    for( X_values, X_values_prime) in zip(X_values, X_values_prime):
+                                        print(f"Input: {X_values}")
+                                        print(f"Reconstructed: {X_values_prime}")
+
+        if(optimizer == adam_optimizer_with_delta):
+            maX_values_error = 0.01
+            alpha = 0.001
+            for network_configuration in network_configurations:
+                for activation_function in activation_functions:
+                        for error_function in error_functions:
+                            for learning_rate in learning_rates:
+                                for total_epochs in epochs:
+                                    neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1],optimizer, seed)
+                                    breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 0.9, alpha= alpha)
+                                    X_values_prime = neural_network.reconstruct_all(X_values)
+
+                                    plot_font_grid(X_values, X_values_prime)
+
+                                    for( X_values, X_values_prime) in zip(X_values, X_values_prime):
+                                        print(f"Input: {X_values}")
+                                        print(f"Reconstructed: {X_values_prime}")
+
+
+    if problem_type == "variational":
         maX_values_error = 0.01
         alpha = 0.001
         for network_configuration in network_configurations:
             for activation_function in activation_functions:
-                    for error_function in error_functions:
-                        for learning_rate in learning_rates:
-                            for total_epochs in epochs:
-                                neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], seed)
-                                breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 0.9, alpha= alpha)
-                                X_values_prime = neural_network.reconstruct_all(X_values)
+                for error_function in error_functions:
+                    for learning_rate in learning_rates:
+                        for total_epochs in epochs:
+                            neural_network = VariationalNeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], "adam_optimizer_with_delta", seed)
+                            breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 1.0)
+                            X_values_prime = neural_network.reconstruct_all(X_values)
 
-                                plot_font_grid(X_values, X_values_prime)
+                            plot_font_grid(X_values, X_values_prime)
 
-                                for( X_values, X_values_prime) in zip(X_values, X_values_prime):
-                                    print(f"Input: {X_values}")
-                                    print(f"Reconstructed: {X_values_prime}")
+                            for( X_values, X_values_prime) in zip(X_values, X_values_prime):
+                                print(f"Input: {X_values}")
+                                print(f"Reconstructed: {X_values_prime}")
 
