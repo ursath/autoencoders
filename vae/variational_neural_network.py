@@ -1,6 +1,6 @@
 import numpy as np
 from typing import List
-from .variational_layer import Layer, LatentSpaceLayer
+from .variational_layer import Layer,LatentSpaceLayer
 from utils.activation_functions import ActivationFunctionType
 from utils.activation_functions import identity, prime_identity
 from utils.error_functions import ErrorFunctionType
@@ -40,12 +40,7 @@ class VariationalNeuralNetwork:
         )
 
         # Creation of the latent space layer
-        self.latent_space_layer = LatentSpaceLayer(
-            num_neurons=2,  # Assuming 2 neurons for mean and variance
-            activation_function=identity,
-            prime_activation_function=prime_identity,
-            seed=seed
-        )
+        self.latent_space_layer = LatentSpaceLayer()
 
         filename = (
             f"layers_{'-'.join(map(str, hidden_layers_neuron_amounts))}_"
@@ -128,21 +123,24 @@ class VariationalNeuralNetwork:
     def backpropagate(self, input_values, target_values, learning_rate, epochs, optimizer, error_function, max_acceptable_error, is_adam_optimizer=False, activation_function="", activation_beta=1.0, alpha=0.0):
         m_k_encoder, v_k_encoder, m_k_decoder, v_k_decoder = [], [], [], []
         prev_dw_encoder, prev_dw_decoder = [], []
+        m_k_mu = v_k_mu = m_k_var = v_k_var = None
 
         for epoch in range(epochs):
             total_recon_loss = 0
             total_kl_loss = 0
-            for x, y in zip(input_values, target_values):
-                x_encoded = x
 
+            for x, y in zip(input_values, target_values):
+                # --- Forward Pass ---
+                x_encoded = x
                 for layer in self.encoder_layers:
                     x_encoded = layer.forward(x_encoded)
 
                 mu = self.mu_layer.forward(x_encoded)
                 logvar = self.variance_layer.forward(x_encoded)
 
-                epsilon = np.random.normal(size=mu.shape)
-                z = mu + np.exp(0.5 * logvar) * epsilon
+                z = self.latent_space_layer.forward(mu, logvar)
+                epsilon = self.latent_space_layer.last_epsilon
+
 
                 x_hat = z
                 for layer in self.decoder_layers:
@@ -154,21 +152,19 @@ class VariationalNeuralNetwork:
                 total_recon_loss += np.sum(recon_error ** 2)
                 total_kl_loss += kl_loss
 
-                # Decoder backprop
+                # --- Backward Pass ---
+                # Decoder
                 delta = recon_error
-                decoder_deltas = []
                 for layer in reversed(self.decoder_layers):
                     delta = layer.backward(delta)
-                    decoder_deltas.insert(0, delta)
 
-                # Gradiente para z y propagación hacia mu y logvar
                 grad_z = delta
                 std = np.exp(0.5 * logvar)
                 dz_dmu = 1
                 dz_dlogvar = 0.5 * std * epsilon
 
-                kl_mu_grad = mu  # d_KL/d_mu = mu
-                kl_logvar_grad = 0.5 * (np.exp(logvar) - 1)  # d_KL/d_logvar
+                kl_mu_grad = mu
+                kl_logvar_grad = 0.5 * (np.exp(logvar) - 1)
 
                 delta_mu = grad_z * dz_dmu + kl_mu_grad
                 delta_logvar = grad_z * dz_dlogvar + kl_logvar_grad
@@ -180,49 +176,50 @@ class VariationalNeuralNetwork:
                 for layer in reversed(self.encoder_layers):
                     delta = layer.backward(delta)
 
-                # Actualizar pesos encoder
+                # --- Weight Updates ---
+                # Encoder
                 for i, layer in enumerate(self.encoder_layers):
                     input_to_layer = x if i == 0 else self.encoder_layers[i - 1].a_j_values
                     if optimizer.__name__ == 'adam_optimizer_with_delta':
                         if epoch == 0:
-                            m_k_encoder.append(np.zeros((len(layer.last_delta), len(input_to_layer))))
-                            v_k_encoder.append(np.zeros((len(layer.last_delta), len(input_to_layer))))
+                            m_k_encoder.append(np.zeros((len(layer.last_delta), len(input_to_layer) + 1)))
+                            v_k_encoder.append(np.zeros((len(layer.last_delta), len(input_to_layer) + 1)))
                         layer.update_weights(learning_rate, optimizer, input_to_layer, m_k_encoder[i], v_k_encoder[i], epoch, alpha)
                     elif optimizer.__name__ == 'momentum_gradient_descent_optimizer_with_delta':
                         if epoch == 0:
-                            prev_dw_encoder.append(np.zeros((len(layer.last_delta), len(input_to_layer))))
+                            prev_dw_encoder.append(np.zeros((len(layer.last_delta), len(input_to_layer) + 1)))
                         layer.update_weights(learning_rate, optimizer, input_to_layer, prev_dw=prev_dw_encoder[i], alpha=alpha)
                     else:
                         layer.update_weights(learning_rate, optimizer, input_to_layer, alpha=alpha)
 
-                # Actualizar pesos decoder
+                # Decoder
                 for i, layer in enumerate(self.decoder_layers):
                     input_to_layer = z if i == 0 else self.decoder_layers[i - 1].a_j_values
                     if optimizer.__name__ == 'adam_optimizer_with_delta':
                         if epoch == 0:
-                            m_k_decoder.append(np.zeros((len(layer.last_delta), len(input_to_layer))))
-                            v_k_decoder.append(np.zeros((len(layer.last_delta), len(input_to_layer))))
+                            m_k_decoder.append(np.zeros((len(layer.last_delta), len(input_to_layer) + 1)))
+                            v_k_decoder.append(np.zeros((len(layer.last_delta), len(input_to_layer) + 1)))
                         layer.update_weights(learning_rate, optimizer, input_to_layer, m_k_decoder[i], v_k_decoder[i], epoch, alpha)
                     elif optimizer.__name__ == 'momentum_gradient_descent_optimizer_with_delta':
                         if epoch == 0:
-                            prev_dw_decoder.append(np.zeros((len(layer.last_delta), len(input_to_layer))))
+                            prev_dw_decoder.append(np.zeros((len(layer.last_delta), len(input_to_layer) + 1)))
                         layer.update_weights(learning_rate, optimizer, input_to_layer, prev_dw=prev_dw_decoder[i], alpha=alpha)
                     else:
                         layer.update_weights(learning_rate, optimizer, input_to_layer, alpha=alpha)
 
+                # Mu y Var
                 input_to_mu = self.encoder_layers[-1].a_j_values
                 input_to_logvar = input_to_mu
 
                 if optimizer.__name__ == 'adam_optimizer_with_delta':
                     if epoch == 0:
-                        m_k_mu = np.zeros((len(self.mu_layer.last_delta), len(input_to_mu)))
-                        v_k_mu = np.zeros((len(self.mu_layer.last_delta), len(input_to_mu)))
-                        m_k_var = np.zeros((len(self.variance_layer.last_delta), len(input_to_logvar)))
-                        v_k_var = np.zeros((len(self.variance_layer.last_delta), len(input_to_logvar)))
+                        m_k_mu = np.zeros((len(self.mu_layer.last_delta), len(input_to_mu) + 1))
+                        v_k_mu = np.zeros((len(self.mu_layer.last_delta), len(input_to_mu) + 1))
+                        m_k_var = np.zeros((len(self.variance_layer.last_delta), len(input_to_logvar) + 1))
+                        v_k_var = np.zeros((len(self.variance_layer.last_delta), len(input_to_logvar) + 1))
 
                     self.mu_layer.update_weights(learning_rate, optimizer, input_to_mu, m_k=m_k_mu, v_k=v_k_mu, epoch=epoch, alpha=alpha)
                     self.variance_layer.update_weights(learning_rate, optimizer, input_to_logvar, m_k=m_k_var, v_k=v_k_var, epoch=epoch, alpha=alpha)
-
                 else:
                     self.mu_layer.update_weights(learning_rate, optimizer, input_to_mu, alpha=alpha)
                     self.variance_layer.update_weights(learning_rate, optimizer, input_to_logvar, alpha=alpha)
@@ -235,4 +232,7 @@ class VariationalNeuralNetwork:
 
             if total_loss < max_acceptable_error:
                 print(f"Early stopping at epoch {epoch + 1} with total loss {total_loss:.6f}")
-                break
+                return epoch + 1, total_loss
+
+        return epochs, total_loss
+
