@@ -74,6 +74,20 @@ class NeuralNetwork:
             a_j_vector = layer.forward(a_j_vector, beta)
             if len(layer.a_j_values) == 2:  # llego a la capa latente
                 return a_j_vector
+            
+    def decode_from_latent(self, latent_vector: np.ndarray, beta: float = 1.0) -> np.ndarray:
+        latent_index = None
+        for i, layer in enumerate(self.layers): # obtengo el espacio latente
+            if len(layer.a_j_values) == 2:
+                latent_index = i
+                break
+
+        decoder_layers = self.layers[latent_index + 1:] # obtengo solo las capas del decodificador (después del espacio latente)
+        a_j = latent_vector # paso el vector latente al decodificador
+        for layer in decoder_layers:
+            a_j = layer.forward(a_j, beta)
+        return a_j
+
     
     def backpropagate(self, input_values:List[List[int]], target_values:List[List[int]], learning_rate:float, epochs:int, optimizer:OptimizerFunctionType, error_function:ErrorFunctionType, max_acceptable_error:float, is_adam_optimizer=False, activation_function= "", activation_beta:float= 1.0, alpha:float= 0.0):
         m_k_matrixes = []

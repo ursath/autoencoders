@@ -1,5 +1,5 @@
 from fonts.fonts import font_1, font_2, font_3
-from fonts.utils import get_all_font_vectors, plot_font_pair, pixel_array_to_char, plot_font_grid
+from fonts.utils import get_all_font_vectors, pixel_array_to_char, plot_font_grid, plot_font_single
 import json
 from autoencoder.neural_network import NeuralNetwork
 from utils.activation_functions import relu, logistic, prime_logistic, relu_derivative, prime_tanh, tanh
@@ -8,6 +8,8 @@ from utils.error_functions import mean_error, squared_error, mean_squared_error
 from plots.latent_space import plot_latent_space
 from utils.noise_functions import gaussian_noise, salt_and_pepper_noise
 from plots.plots import plot_epoch_network_error
+from utils.generate_character import generate_new_character_and_plot
+import numpy as np
 import os
 
 if __name__ == "__main__":
@@ -79,9 +81,13 @@ if __name__ == "__main__":
 
     target_values = get_all_font_vectors(font_data)
     target_values = target_values[X_range[0]:X_range[1]]
+    generate_new_character = False
 
     if problem_type == "normal":
         X_values = target_values
+    elif problem_type == "generate":
+        X_values = target_values
+        generate_new_character = True
     elif problem_type == "denoising":
         noise_level = problem_config['denoising_options']['noise_level']
         noise_function = noise_functions_map[problem_config['denoising_options']['noise_function']]
@@ -108,14 +114,13 @@ if __name__ == "__main__":
                                 neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], seed)
                                 breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta=1.0)
                                 X_values_prime = neural_network.reconstruct_all(X_values)
+
+                                plot_latent_space(neural_network, X_values, characters)
                                 
-                                #plot_latent_space(neural_network, X_values, characters)
+                                if(generate_new_character):
+                                    generate_new_character_and_plot(neural_network)
 
                                 plot_font_grid(X_values, X_values_prime)
-
-                                for( X_values, X_values_prime) in zip(X_values, X_values_prime):
-                                    print(f"Input: {X_values}")
-                                    print(f"Reconstructed: {X_values_prime}")
 
                                 if not os.path.exists("/stats/plots/"):
                                     os.makedirs("stats/plots/", exist_ok=True)
@@ -124,7 +129,7 @@ if __name__ == "__main__":
                                     plot_epoch_network_error(neural_network.stats, neural_network.stats.filepath.replace(".csv", ".png").replace("data/", "plots/"))
 
     if(optimizer == momentum_gradient_descent_optimizer_with_delta):
-        maX_values_error = 0.1
+        maX_values_error = 0.01
         alpha = 0.9
         for network_configuration in network_configurations:
             for activation_function in activation_functions:
@@ -135,15 +140,17 @@ if __name__ == "__main__":
                                 breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 1.0, alpha= alpha)
                                 X_values_prime = neural_network.reconstruct_all(X_values)
 
+                                plot_latent_space(neural_network, X_values, characters)
+
+                                if(generate_new_character):
+                                    generate_new_character_and_plot(neural_network)
+                                
                                 plot_font_grid(X_values, X_values_prime)
 
-                                for( X_values, X_values_prime) in zip(X_values, X_values_prime):
-                                    print(f"Input: {X_values}")
-                                    print(f"Reconstructed: {X_values_prime}")
                                 
     if(optimizer == adam_optimizer_with_delta):
         maX_values_error = 0.01
-        alpha = 0.001
+        alpha = 0.0001
         for network_configuration in network_configurations:
             for activation_function in activation_functions:
                     for error_function in error_functions:
@@ -153,9 +160,10 @@ if __name__ == "__main__":
                                 breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 0.9, alpha= alpha)
                                 X_values_prime = neural_network.reconstruct_all(X_values)
 
-                                plot_font_grid(X_values, X_values_prime)
+                                plot_latent_space(neural_network, X_values, characters)
 
-                                for( X_values, X_values_prime) in zip(X_values, X_values_prime):
-                                    print(f"Input: {X_values}")
-                                    print(f"Reconstructed: {X_values_prime}")
+                                if(generate_new_character):
+                                    generate_new_character_and_plot(neural_network)
+
+                                plot_font_grid(X_values, X_values_prime)
 

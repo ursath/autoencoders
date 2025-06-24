@@ -15,6 +15,20 @@ def to_bin_array(encoded_caracter):
 def get_all_font_vectors(font_data):
     return np.array([to_bin_array(c).flatten() for c in font_data])
 
+def plot_font_single(charcacter, file_name="generated_character.png"):
+
+    cmap = plt.get_cmap('binary')
+
+    original_character_template = charcacter.reshape(7, 5)
+
+    fig, axes = plt.subplots(1, 2, figsize=(6, 3))
+    sns.heatmap(original_character_template, ax=axes[0], cbar=False, square=True, cmap=cmap, linecolor='k', linewidth=0, xticklabels=False, yticklabels=False)
+    axes[0].set_title(f"Original")
+    plt.tight_layout()
+
+    output_path = os.path.join("results", f"{file_name}.png")
+    plt.savefig(output_path)
+    plt.close(fig) 
 
 def plot_font_pair(original, reconstructed, character):
 
