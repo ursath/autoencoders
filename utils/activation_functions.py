@@ -23,3 +23,9 @@ def relu_derivative(x, beta:float=1.0):
     result[x > 0] = 1.0
     
     return result
+
+def identity(x:float, beta:float=1.0)->float:
+    return x
+
+def prime_identity(x:float, beta:float=1.0)->float:
+    return 1.0

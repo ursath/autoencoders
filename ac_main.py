@@ -99,7 +99,7 @@ if __name__ == "__main__":
     for config in configs:
         print("##############################################")
         print(f"Running with configuration: {config.__dict__}")
-        print(f"Run number: {configs.index(config) + 1} of {len(configs)}")
+        print(f"Run number: {configs.index(config)} of {len(configs)}")
 
         network_configuration = config.architecture
         activation_function = config.hidden_layers_activation_functions
@@ -128,15 +128,19 @@ if __name__ == "__main__":
 
         if (optimizer == gradient_descent_optimizer_with_delta):
             maX_values_error = 0.01            
-            neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0], output_layer_activation_function[1], seed)
+            neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0], output_layer_activation_function[1], config.optimizer, seed)
             breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta=1.0)
             X_values_prime = neural_network.reconstruct_all(X_values)
+
             plot_latent_space(neural_network, X_values, characters)
+
             for i in range(len(X_values)):
-                plot_font_pair(X_values[i], X_values_prime[i], characters[i])
+                plot_font_pair(X_values[i], X_values_prime[i], characters[i], neural_network.stats.filename)
+           
             for( X_values, X_values_prime) in zip(X_values, X_values_prime):
                 print(f"Input: {X_values}")
                 print(f"Reconstructed: {X_values_prime}")
+           
             if not os.path.exists("/stats/plots/"):
                 os.makedirs("stats/plots/", exist_ok=True)
             
@@ -147,12 +151,13 @@ if __name__ == "__main__":
             maX_values_error = 0.1
             alpha = 0.9
 
-            neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0], output_layer_activation_function[1], seed)
+            neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0], output_layer_activation_function[1], config.optimizer, seed)
             breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 1.0, alpha= alpha)
             X_values_prime = neural_network.reconstruct_all(X_values)
 
             for i in range(len(X_values)):
-                plot_font_pair(X_values[i], X_values_prime[i], characters[i])
+                plot_font_pair(X_values[i], X_values_prime[i], characters[i], neural_network.stats.filename)
+
 
             for( X_values, X_values_prime) in zip(X_values, X_values_prime):
                 print(f"Input: {X_values}")
@@ -168,12 +173,12 @@ if __name__ == "__main__":
             maX_values_error = 0.01
             alpha = 0.001
              
-            neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0], output_layer_activation_function[1], seed)
+            neural_network = NeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0], output_layer_activation_function[1], config.optimizer, seed)
             breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 0.9, alpha= alpha)
             X_values_prime = neural_network.reconstruct_all(X_values)
 
             for i in range(len(X_values)):
-                plot_font_pair(X_values[i], X_values_prime[i], characters[i])
+                plot_font_pair(X_values[i], X_values_prime[i], characters[i], neural_network.stats.filename)
 
             for( X_values, X_values_prime) in zip(X_values, X_values_prime):
                 print(f"Input: {X_values}")

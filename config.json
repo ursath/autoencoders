@@ -2,17 +2,17 @@
     "autoencoder": {
 
       "architecture": [[35, 10, 2, 10, 35]],
-      "X_range": [2, 10 ],
-      "hidden_layers_activation_functions": ["tanh"],
+      "X_range": [0, 32 ],
+      "hidden_layers_activation_functions": ["relu"],
       "output_layer_activation_function": ["logistic"],
-      "optimizer": "gradient_descent",
+      "optimizer": "adam",
       "error_functions": ["mean_squared_error"],
       "epochs": [10000],
       "learning_rates": [0.01]
     },
 
     "problem": {
-      "name": "normal",
+      "name": "variational",
       "font_data": "font_3",
       "denoising_options": {
         "noise_level": 0.4,

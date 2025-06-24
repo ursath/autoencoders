@@ -30,7 +30,7 @@ def plot_font_single(charcacter, file_name="generated_character.png"):
     plt.savefig(output_path)
     plt.close(fig) 
 
-def plot_font_pair(original, reconstructed, character):
+def plot_font_pair(original, reconstructed, character, prefix):
 
     folder_path = "results/characters"
     if not os.path.exists(folder_path):
@@ -48,7 +48,7 @@ def plot_font_pair(original, reconstructed, character):
     axes[1].set_title(f"Reconstrucción")
     plt.tight_layout()
 
-    output_path = os.path.join("results/characters", f"{character}.png")
+    output_path = os.path.join("results/characters", f"{prefix}_{character}.png")
     plt.savefig(output_path)
     plt.close(fig) 
 
