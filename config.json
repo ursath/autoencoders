@@ -1,7 +1,7 @@
 {
     "autoencoder": {
 
-      "architecture": [[35, 10, 2, 10, 35]],
+      "architecture": [[72, 20, 2, 20, 72]],
       "X_range": [0, 32 ],
       "hidden_layers_activation_functions": ["relu"],
       "output_layer_activation_function": ["logistic"],

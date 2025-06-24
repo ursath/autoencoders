@@ -1,4 +1,4 @@
-from fonts.fonts import font_1, font_2, font_3
+from fonts.fonts import font_1, font_2, font_3, emojis
 from fonts.utils import get_all_font_vectors, pixel_array_to_char, plot_font_grid, plot_font_single
 import json
 from autoencoder.neural_network import NeuralNetwork
@@ -10,6 +10,7 @@ from plots.latent_space import plot_latent_space
 from utils.noise_functions import gaussian_noise, salt_and_pepper_noise
 from plots.plots import plot_epoch_network_error
 from utils.generate_character import generate_new_character_and_plot
+from fonts.emoji_utils import get__all_font_vectors_emoji, plot_font_grid_emoji
 import numpy as np
 import os
 
@@ -165,8 +166,7 @@ if __name__ == "__main__":
                                     
                                     plot_font_grid(X_values, X_values_prime)
 
-                                  
-                                            
+    emoji_values = get__all_font_vectors_emoji(emojis)                              
     if problem_type == "variational":    
         maX_values_error = 0.01
         alpha = 0.0001
@@ -175,11 +175,11 @@ if __name__ == "__main__":
                 for error_function in error_functions:
                     for learning_rate in learning_rates:
                         for total_epochs in epochs:
-                            neural_network = VariationalNeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], "adam_optimizer_with_delta", seed)
-                            breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, learning_rate, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__, activation_beta= 1.0)
-                            X_values_prime = neural_network.reconstruct_all(X_values)
+                            neural_network = VariationalNeuralNetwork(emoji_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], "adam_optimizer_with_delta", seed)
+                            breaking_epoch, training_error = neural_network.backpropagate(emoji_values, emoji_values, alpha, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__)
+                            emoji_values_prime = neural_network.reconstruct_all(emoji_values)
 
-                            plot_font_grid(X_values, X_values_prime)
+                            plot_font_grid_emoji(emoji_values, emoji_values_prime)
 
                             for( X_values, X_values_prime) in zip(X_values, X_values_prime):
                                 print(f"Input: {X_values}")
