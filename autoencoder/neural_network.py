@@ -21,7 +21,7 @@ class NeuralNetwork:
             f"act_{activation_function.__name__}_"
             f"outact_{output_layer_activation_function.__name__}_"
             f"seed_{seed}_"
-            f"{optimizer}"
+            f"{optimizer.__name__}"
         )
 
         self.stats = Statistics(filename)
