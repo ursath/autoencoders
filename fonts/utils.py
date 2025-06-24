@@ -21,9 +21,8 @@ def plot_font_single(charcacter, file_name="generated_character.png"):
 
     original_character_template = charcacter.reshape(7, 5)
 
-    fig, axes = plt.subplots(1, 2, figsize=(6, 3))
-    sns.heatmap(original_character_template, ax=axes[0], cbar=False, square=True, cmap=cmap, linecolor='k', linewidth=0, xticklabels=False, yticklabels=False)
-    axes[0].set_title(f"Original")
+    fig, axes = plt.subplots(1, 1, figsize=(6, 3))
+    sns.heatmap(original_character_template, ax=axes, cbar=False, square=True, cmap=cmap, linecolor='k', linewidth=0, xticklabels=False, yticklabels=False)
     plt.tight_layout()
 
     output_path = os.path.join("results", f"{file_name}.png")
