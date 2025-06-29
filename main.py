@@ -175,8 +175,8 @@ if __name__ == "__main__":
                 for error_function in error_functions:
                     for learning_rate in learning_rates:
                         for total_epochs in epochs:
-                            neural_network = VariationalNeuralNetwork(emoji_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], "adam_optimizer_with_delta", seed)
-                            breaking_epoch, training_error = neural_network.backpropagate(emoji_values, emoji_values, alpha, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__)
+                            neural_network = VariationalNeuralNetwork(X_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], "adam_optimizer_with_delta", seed)
+                            breaking_epoch, training_error = neural_network.backpropagate(X_values, target_values, alpha, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__)
                             emoji_values_prime = neural_network.reconstruct_all(emoji_values)
 
                             plot_font_grid_emoji(emoji_values, emoji_values_prime)

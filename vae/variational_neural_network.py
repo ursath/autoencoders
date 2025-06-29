@@ -20,27 +20,7 @@ class VariationalNeuralNetwork:
 
 
         latent_layer_index = np.floor(len(hidden_layers_neuron_amounts) / 2).astype(int)
-        # Creation of spetial layer for media and variance
-        self.mu_layer = Layer(
-            num_inputs = hidden_layers_neuron_amounts[latent_layer_index - 1],
-            num_previous_layer_neurons = hidden_layers_neuron_amounts[latent_layer_index - 1],
-            num_neurons= 2 ,
-            activation_function=identity,
-            prime_activation_function=prime_identity,
-            seed=seed
-        )
-
-        self.variance_layer = Layer(
-            num_inputs = hidden_layers_neuron_amounts[latent_layer_index - 1],
-            num_previous_layer_neurons = hidden_layers_neuron_amounts[latent_layer_index - 1],
-            num_neurons= 2 ,
-            activation_function=identity,
-            prime_activation_function=prime_identity,
-            seed=seed
-        )
-
-        # Creation of the latent space layer
-        self.latent_space_layer = LatentSpaceLayer()
+        
 
         filename = (
             f"layers_{'-'.join(map(str, hidden_layers_neuron_amounts))}_"
@@ -55,37 +35,72 @@ class VariationalNeuralNetwork:
         input_size = len(x_values[0])
         previous_layer_neurons = input_size
 
+        encoder_layer_index = 0
         # Encoder layers
         for current_layer_neuron_amount in hidden_layers_neuron_amounts[:latent_layer_index]: 
-            
+        
             layer = Layer(
                 num_inputs=previous_layer_neurons,                
                 num_previous_layer_neurons=previous_layer_neurons,
                 num_neurons=current_layer_neuron_amount,
                 activation_function=activation_function,
                 prime_activation_function=prime_activation_function,
-                seed=seed
+                seed=seed,
+                neuron_index=encoder_layer_index + 1
             )
                 
             self.encoder_layers.append(layer)
-            previous_layer_neurons = current_layer_neuron_amount 
+            previous_layer_neurons = current_layer_neuron_amount
+            encoder_layer_index += 1
+
+       # Creation of spetial layer for media and variance
+        self.mu_layer = Layer(
+            num_inputs = hidden_layers_neuron_amounts[latent_layer_index - 1],
+            num_previous_layer_neurons = hidden_layers_neuron_amounts[latent_layer_index - 1],
+            num_neurons= 2 ,
+            activation_function=identity,
+            prime_activation_function=prime_identity,
+            seed=seed,
+            neuron_index = len(self.encoder_layers) - 1
+        )
+
+        self.variance_layer = Layer(
+            num_inputs = hidden_layers_neuron_amounts[latent_layer_index - 1],
+            num_previous_layer_neurons = hidden_layers_neuron_amounts[latent_layer_index - 1],
+            num_neurons= 2 ,
+            activation_function=identity,
+            prime_activation_function=prime_identity,
+            seed=seed,
+            neuron_index = len(self.encoder_layers) - 1
+        )
+
+        # Creation of the latent space layer
+        self.latent_space_layer = LatentSpaceLayer()
 
         latent_dim = hidden_layers_neuron_amounts[latent_layer_index]
         previous_layer_neurons = latent_dim
 
+        decoder_layer_index = 0
+
         # Decoder layers
         for current_layer_neuron_amount in hidden_layers_neuron_amounts[latent_layer_index + 1:-1]:
+            first_layer = decoder_layer_index == 0
+            last_layer = decoder_layer_index == len(hidden_layers_neuron_amounts)
             layer = Layer(
                 num_inputs=previous_layer_neurons,                
                 num_previous_layer_neurons=previous_layer_neurons,
                 num_neurons=current_layer_neuron_amount,
                 activation_function=activation_function,
                 prime_activation_function=prime_activation_function,
-                seed=seed
+                seed=seed,
+                neuron_index=decoder_layer_index + 1,
+                first_layer=first_layer,
+                last_layer=last_layer
             )
                 
             self.decoder_layers.append(layer)
             previous_layer_neurons = current_layer_neuron_amount
+            decoder_layer_index += 1
 
         # Output layer
         output_layer = Layer(
@@ -94,13 +109,15 @@ class VariationalNeuralNetwork:
             num_neurons=len(x_values[0]),  
             activation_function=output_layer_activation_function,
             prime_activation_function=output_layer_prime_activation_function,
-            seed=seed
+            seed=seed,
+            neuron_index=decoder_layer_index,
+            last_layer=True
         )
 
         self.decoder_layers.append(output_layer)
 
-        self.encoder_weight_matrixes = [layer.weights_matrix for layer in self.encoder_layers]
-        self.decoder_weight_matrixes = [layer.weights_matrix for layer in self.decoder_layers]
+        #self.encoder_weight_matrixes = [layer.weights_matrix for layer in self.encoder_layers]
+        #self.decoder_weight_matrixes = [layer.weights_matrix for layer in self.decoder_layers]
 
 
     def predict(self, input_values:List[int], beta:float=1.0):
@@ -120,6 +137,13 @@ class VariationalNeuralNetwork:
             if len(layer.a_j_values) == 2:  # llego a la capa latente
                 return a_j_vector
     
+    def reconstruction_error(self,target_values: List[int], reconstructed_values: List[int]) -> np.ndarray:
+        
+        if len(target_values) != len(reconstructed_values):
+                raise ValueError(f"Target and reconstructed values must have the same length. Target: {len(target_values[i])}, Reconstructed: {len(reconstructed_values[i])}")
+    
+        return np.square(target_values - reconstructed_values) # Devulve la norma 2 entre X y X'
+
     def backpropagate(self, input_values, target_values, learning_rate, epochs, optimizer, error_function, max_acceptable_error, is_adam_optimizer=False, activation_function="", activation_beta=1.0, alpha=0.0):
         m_k_encoder, v_k_encoder, m_k_decoder, v_k_decoder = [], [], [], []
         prev_dw_encoder, prev_dw_decoder = [], []
@@ -141,12 +165,12 @@ class VariationalNeuralNetwork:
                 z = self.latent_space_layer.forward(mu, logvar)
                 epsilon = self.latent_space_layer.last_epsilon
 
-
                 x_hat = z
                 for layer in self.decoder_layers:
-                    x_hat = layer.forward(x_hat)
+                    if not isinstance(layer, LatentSpaceLayer):
+                        x_hat = layer.forward(x_hat)
 
-                recon_error = y - x_hat
+                recon_error = self.reconstruction_error(y, x_hat)
                 kl_loss = -0.5 * np.sum(1 + logvar - mu**2 - np.exp(logvar))
 
                 total_recon_loss += np.sum(recon_error ** 2)
@@ -154,27 +178,32 @@ class VariationalNeuralNetwork:
 
                 # --- Backward Pass ---
                 # Decoder
-                delta = recon_error
                 for layer in reversed(self.decoder_layers):
-                    delta = layer.backward(delta)
+                    if layer.last_layer:
+                        delta_i = 2 * (y - x_hat) * layer.prime_activation_function(layer.h_j_values, activation_beta)
+                        last_weight_matrix = layer.weights_matrix[:, 1:]
+                        layer.backward(delta_i, activation_beta)
+                    else:
+                        delta_j = np.dot(last_weight_matrix.T, delta_i) * layer.prime_activation_function(layer.h_j_values, activation_beta)
+                        layer.backward(delta_j, activation_beta)
+                    if layer.first_layer:
+                        delta_z = layer.deltaW[0]
+                        if not isinstance(layer, LatentSpaceLayer):
+                            last_weight_matrix = layer.weights_matrix[:, 1:]
 
-                grad_z = delta
-                std = np.exp(0.5 * logvar)
-                dz_dmu = 1
-                dz_dlogvar = 0.5 * std * epsilon
+                
+                # LatentSpace
+                param_lambda = 1
+                delta_mu = (delta_z + param_lambda * self.mu_layer.a_j_values) * self.mu_layer.prime_activation_function(self.mu_layer.h_j_values, activation_beta)
+                delta_sigma = (delta_z * self.latent_space_layer.last_epsilon + param_lambda * (np.exp(self.variance_layer.a_j_values) - 1)) * self.variance_layer.prime_activation_function(self.variance_layer.h_j_values, activation_beta)
 
-                kl_mu_grad = mu
-                kl_logvar_grad = 0.5 * (np.exp(logvar) - 1)
+                self.mu_layer.backward(delta_mu, activation_beta)
+                self.variance_layer.backward(delta_sigma, activation_beta)
 
-                delta_mu = grad_z * dz_dmu + kl_mu_grad
-                delta_logvar = grad_z * dz_dlogvar + kl_logvar_grad
-
-                delta_mu = self.mu_layer.backward(delta_mu)
-                delta_logvar = self.variance_layer.backward(delta_logvar)
-
-                delta = delta_mu + delta_logvar
+                # Encoder
                 for layer in reversed(self.encoder_layers):
-                    delta = layer.backward(delta)
+                    delta_encoder = np.dot(self.mu_layer.weights_matrix[:, 1:].T, delta_mu) + np.dot(self.variance_layer.weights_matrix[:, 1:].T, delta_sigma)
+                    layer.backward(delta_encoder, activation_beta)
 
                 # --- Weight Updates ---
                 # Encoder

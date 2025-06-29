@@ -2,14 +2,18 @@ import numpy as np
 from .variation_multilayer_perceptron import MultiLayerPerceptron
 
 class Layer:
-    def __init__(self, num_inputs:int ,num_previous_layer_neurons:int, num_neurons: int, activation_function, prime_activation_function=None, seed: int = 43):
+    def __init__(self, num_inputs:int ,num_previous_layer_neurons:int, num_neurons: int, activation_function, prime_activation_function=None, seed: int = 43,neuron_index=0,last_layer=False,first_layer=False):
         self.activation_function = activation_function  
         self.prime_activation_function = prime_activation_function
         self.weights_matrix = np.random.rand(num_neurons, num_previous_layer_neurons + 1) * 0.1
         self.a_j_values = None
         self.h_j_values = None
         self.last_input = None
-        self.last_delta = None
+        self.deltas = []
+        self.deltaW = []
+        self.last_layer = last_layer
+        self.neuron_index = neuron_index
+        self.first_layer = first_layer
         self.neurons: list[MultiLayerPerceptron] = [
             MultiLayerPerceptron(num_previous_layer_neurons, activation_function)
             for _ in range(num_neurons)
@@ -28,10 +32,9 @@ class Layer:
         self.h_j_values = np.array(h_values)
         return self.a_j_values
     
-    def backward(self, delta_next, beta=1.0):
-        derivative = self.prime_activation_function(self.h_j_values, beta)
-        self.last_delta = delta_next * derivative
-        return self.weights_matrix[:, 1:].T @ self.last_delta
+    def backward(self, delta, beta=1.0):
+        self.deltas.append(delta)
+        self.deltaW.append(delta[:,np.newaxis] * self.last_input) # Falta multiplicar por el learning rate (se hace en la actualización de pesos)
 
     def update_weights(self, learning_rate, optimizer=None, input_override=None, m_k=None, v_k=None, epoch=None, alpha=0.0, beta1=0.9, beta2=0.999, eps=1e-6, prev_dw=None):
         x = self.last_input if input_override is None else np.insert(input_override, 0, 1)
@@ -56,6 +59,7 @@ class LatentSpaceLayer:
         self.last_logvar = None
         self.last_z = None
         self.last_epsilon = None
+        self.delta_z = None
 
     def forward(self, mu, logvar):
         self.last_mu = mu
@@ -67,3 +71,6 @@ class LatentSpaceLayer:
         self.last_z = z
         self.last_epsilon = epsilon
         return z
+    
+    def backward(self,delta):
+        self.delta_z = delta
