@@ -18,18 +18,31 @@ def get__all_font_vectors_emoji(font_data):
     return np.array([to_bin_array_emoji(c).flatten() for c in font_data])
 
 def plot_font_single_emoji(emoji, file_name="generated_emoji.png"):
-
-    cmap = plt.get_cmap('binary')
-
-    original_emoji_template = emoji.reshape(8, 9)
-
-    fig, axes = plt.subplots(1, 1, figsize=(6, 3))
-    sns.heatmap(original_emoji_template, ax=axes, cbar=False, square=True, cmap=cmap, linecolor='k', linewidth=0, xticklabels=False, yticklabels=False)
+    
+    # Si el emoji está aplanado (1024 elementos), redimensionarlo a (16, 16, 4)
+    if emoji.ndim == 1:
+        emoji_img = emoji.reshape(16, 16, 4)
+    else:
+        emoji_img = emoji
+    
+    # Asegurarse de que los valores estén en [0, 1]
+    emoji_img = np.clip(emoji_img, 0, 1)
+    
+    fig, axes = plt.subplots(1, 1, figsize=(6, 6))  # Figura cuadrada para 16x16
+    
+    # Usar imshow en lugar de heatmap para mostrar imágenes RGBA
+    axes.imshow(emoji_img)
+    axes.set_title("Emoji Generado")
+    axes.axis('off')  # Ocultar ejes
+    
     plt.tight_layout()
-
+    
+    # Asegurar que el directorio existe
+    os.makedirs("results", exist_ok=True)
     output_path = os.path.join("results", f"{file_name}.png")
-    plt.savefig(output_path)
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
+    print(f"Emoji guardado en: {output_path}")
 
 def plot_font_grid_emoji(originals, outputs, pairs_per_row=5, original_shape=(16, 16)):
     
