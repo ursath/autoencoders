@@ -2,15 +2,15 @@ from fonts.fonts import font_1, font_2, font_3, emojis
 from fonts.utils import get_all_font_vectors, pixel_array_to_char, plot_font_grid, plot_font_single
 import json
 from autoencoder.neural_network import NeuralNetwork
-from vae.variational_neural_network import VariationalNeuralNetwork
-from utils.activation_functions import relu, logistic, prime_logistic, relu_derivative, prime_tanh, tanh
+from vae.vae import VariationalAutoencoder
+from utils.activation_functions import relu, logistic, prime_logistic, relu_derivative, prime_tanh, tanh, softplus, prime_softplus
 from utils.optimizers import rosenblatt_optimizer, gradient_descent_optimizer_with_delta, momentum_gradient_descent_optimizer_with_delta, adam_optimizer_with_delta
 from utils.error_functions import mean_error, squared_error, mean_squared_error
 from plots.latent_space import plot_latent_space
 from utils.noise_functions import gaussian_noise, salt_and_pepper_noise
 from plots.plots import plot_epoch_network_error
 from utils.generate_character import generate_new_character_and_plot
-from fonts.emoji_utils import get__all_font_vectors_emoji, plot_font_grid_emoji
+from fonts.emoji_utils import get__all_font_vectors_emoji, plot_font_grid_emoji, plot_font_single_emoji
 import numpy as np
 import os
 
@@ -167,21 +167,27 @@ if __name__ == "__main__":
                                     plot_font_grid(X_values, X_values_prime)
 
     emoji_values = get__all_font_vectors_emoji(emojis)                              
-    if problem_type == "variational":    
-        maX_values_error = 0.01
-        alpha = 0.0001
+    encoder_configuration = [72, 36, 20, 10, 10]
+    decoder_configuration = [5, 10, 20, 36, 72]
+
+    if problem_type == "variational":
+        maX_values_error = 0.001
+        learning_rates = [0.001]
+        activation_functions = [(softplus, prime_softplus)]
+        epochs = [300]
         for network_configuration in network_configurations:
             for activation_function in activation_functions:
                 for error_function in error_functions:
                     for learning_rate in learning_rates:
                         for total_epochs in epochs:
-                            neural_network = VariationalNeuralNetwork(emoji_values, network_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0][0], output_layer_activation_function[0][1], "adam_optimizer_with_delta", seed)
-                            breaking_epoch, training_error = neural_network.backpropagate(emoji_values, emoji_values, alpha, total_epochs, optimizer, error_function, maX_values_error, is_adam_optimizer= False, activation_function= activation_function[0].__name__)
-                            emoji_values_prime = neural_network.reconstruct_all(emoji_values)
+                            neural_network = VariationalAutoencoder(encoder_configuration, decoder_configuration, activation_function[0], activation_function[1], learning_rate)
+                            neural_network.train(emoji_values, total_epochs)
+                            
+                            generated_emoji_values_arr = []
+                            for emoji_index in range(15):
+                                generated_emoji_values= neural_network.generate()
+                                plot_font_single_emoji(generated_emoji_values[0], f"{emoji_index}_emoji_b&w_{len(emojis)}_base_gradient_original_{total_epochs}_epochs_logistic.png")
+                                generated_emoji_values_arr.append(generated_emoji_values[0])
 
-                            plot_font_grid_emoji(emoji_values, emoji_values_prime)
-
-                            for( X_values, X_values_prime) in zip(X_values, X_values_prime):
-                                print(f"Input: {X_values}")
-                                print(f"Reconstructed: {X_values_prime}")
+                            plot_font_grid_emoji(emoji_values, generated_emoji_values_arr, f"b&w_len_{len(emojis)}_gradient_original_{total_epochs}_epochs_logistic")
 
