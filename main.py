@@ -10,7 +10,7 @@ from plots.latent_space import plot_latent_space
 from utils.noise_functions import gaussian_noise, salt_and_pepper_noise
 from plots.plots import plot_epoch_network_error
 from utils.generate_character import generate_new_character_and_plot
-from fonts.emoji_utils import get__all_font_vectors_emoji, plot_font_grid_emoji
+from fonts.emoji_utils import get__all_font_vectors_emoji, plot_font_grid_emoji, process_folder, rgba_array_to_png
 import numpy as np
 import os
 
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     # Definición de X_values y target_values según el tipo de problema
 
     target_values = get_all_font_vectors(font_data)
-    target_values = target_values[X_range[0]:X_range[1]]
+    #target_values = target_values[X_range[0]:X_range[1]]
     generate_new_character = False
 
     if problem_type == "normal":
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     # Asociación de caracteres a los vectores
 
     characters = [pixel_array_to_char(array, font_data, font_init_char) for array in target_values]
-    print(f"Caracteres asociados: {characters}")
+    #print(f"Caracteres asociados: {characters}")
 
     # Inicialización de la red neuronal y entrenamiento
     if problem_type == "normal" or problem_type == "denoising":
@@ -166,7 +166,9 @@ if __name__ == "__main__":
                                     
                                     plot_font_grid(X_values, X_values_prime)
 
-    emoji_values = get__all_font_vectors_emoji(emojis)                              
+    #emoji_values = get__all_font_vectors_emoji(emojis)   
+    emojis = process_folder("images")     
+    emoji_values = emojis[0]                 
     if problem_type == "variational":    
         maX_values_error = 0.01
         alpha = 0.0001
@@ -181,7 +183,15 @@ if __name__ == "__main__":
 
                             plot_font_grid_emoji(emoji_values, emoji_values_prime)
 
-                            for( X_values, X_values_prime) in zip(X_values, X_values_prime):
-                                print(f"Input: {X_values}")
-                                print(f"Reconstructed: {X_values_prime}")
+
+                            for emoji in emoji_values_prime:
+                                # Guardar cada emoji reconstruido como PNG
+                                rgba_array_to_png(
+                                    arr=emoji,
+                                    path=f"results/emoji_reconstruido_{emoji}.png",
+                                    original_shape=(16, 16)  # Importante: especificar el tamaño original
+                                )
+                            #for( X_values, X_values_prime) in zip(X_values, X_values_prime):
+                            #    print(f"Input: {X_values}")
+                            #    print(f"Reconstructed: {X_values_prime}")
 

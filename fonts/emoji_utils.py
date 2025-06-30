@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+from PIL import Image
+from typing import Tuple, List, Optional
 
 def to_bin_array_emoji(encoded_caracter):
     bin_array = np.zeros((8, 9), dtype=int)
@@ -29,16 +31,14 @@ def plot_font_single_emoji(emoji, file_name="generated_emoji.png"):
     plt.savefig(output_path)
     plt.close(fig)
 
-def plot_font_grid_emoji(originals, outputs, pairs_per_row=5):
-
-    cmap = plt.get_cmap('binary')
-
+def plot_font_grid_emoji(originals, outputs, pairs_per_row=5, original_shape=(16, 16)):
+    
     num_pairs = len(originals)
     num_rows = int(np.ceil(num_pairs / pairs_per_row))
 
     fig, axes = plt.subplots(
         num_rows, pairs_per_row * 2,
-        figsize=(pairs_per_row * 2, num_rows * 2)
+        figsize=(pairs_per_row * 4, num_rows * 4)  # Más grande para 16x16
     )
 
     if num_rows == 1:
@@ -48,36 +48,83 @@ def plot_font_grid_emoji(originals, outputs, pairs_per_row=5):
         row = idx // pairs_per_row
         col_base = (idx % pairs_per_row) * 2
 
-        original_template = original.reshape(8, 9)
-        reconstructed_template = reconstructed.reshape(8, 9)
+        # Si los datos están aplanados, los redimensionamos a (16, 16, 4)
+        if original.ndim == 1:
+            original_img = original.reshape(16, 16, 4)
+            reconstructed_img = reconstructed.reshape(16, 16, 4)
+        else:
+            original_img = original
+            reconstructed_img = reconstructed
+
+        # Asegurarse de que los valores estén en [0, 1]
+        original_img = np.clip(original_img, 0, 1)
+        reconstructed_img = np.clip(reconstructed_img, 0, 1)
 
         # Original
-        sns.heatmap(
-            original_template,
-            ax=axes[row][col_base],
-            cbar=False,
-            square=True,
-            cmap=cmap,
-            linecolor='k',
-            linewidth=0,
-            xticklabels=False,
-            yticklabels=False
-        )
+        axes[row][col_base].imshow(original_img)
+        axes[row][col_base].set_title("Original")
+        axes[row][col_base].axis('off')
 
         # Reconstrucción
-        sns.heatmap(
-            reconstructed_template,
-            ax=axes[row][col_base + 1],
-            cbar=False,
-            square=True,
-            cmap=cmap,
-            linecolor='k',
-            linewidth=0,
-            xticklabels=False,
-            yticklabels=False
-        )
+        axes[row][col_base + 1].imshow(reconstructed_img)
+        axes[row][col_base + 1].set_title("Reconstrucción")
+        axes[row][col_base + 1].axis('off')
+
+    # Ocultar axes vacíos si los hay
+    for idx in range(num_pairs, num_rows * pairs_per_row):
+        row = idx // pairs_per_row
+        col_base = (idx % pairs_per_row) * 2
+        if row < num_rows and col_base < pairs_per_row * 2:
+            axes[row][col_base].axis('off')
+            axes[row][col_base + 1].axis('off')
 
     plt.tight_layout()
-    output_path = os.path.join("results", f"emoji_grid.png")
-    plt.savefig(output_path)
+    
+    # Asegurar que el directorio existe
+    os.makedirs("results", exist_ok=True)
+    output_path = os.path.join("results", f"emoji_grid_rgba.png")
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
+    print(f"Grid guardado en: {output_path}")
+
+def process_folder(
+    input_folder: str,
+    output_size: Tuple[int, int] = (16, 16),
+    flatten: bool = True
+) -> Tuple[np.ndarray, Tuple[int, int]]:
+    image_arrays: List[np.ndarray] = []
+    shape = output_size
+
+    files = sorted([
+        f for f in os.listdir(input_folder)
+        if f.lower().endswith(".png")
+    ])
+
+    for f in files:
+        img_path = os.path.join(input_folder, f)
+        img = Image.open(img_path).convert("RGBA").resize(shape, Image.LANCZOS)
+        arr = np.asarray(img, dtype=np.float32) / 255.0  # Normalizado a [0, 1]
+
+        if flatten:
+            arr = arr.reshape(-1)  # Vector de 1024 (si es 16x16x4)
+        image_arrays.append(arr)
+
+    X = np.stack(image_arrays)
+    return X, shape
+
+def rgba_array_to_png(
+    arr: np.ndarray,
+    path: str,
+    original_shape: Optional[Tuple[int, int]] = None
+) -> None:
+    if arr.ndim == 1:
+        if original_shape is None:
+            raise ValueError("Flat array provided — supply original_shape=(H, W)")
+        H, W = original_shape
+        arr = arr.reshape((H, W, 4))  # RGBA
+
+    arr = np.clip(arr, 0.0, 1.0)  # Asegura que esté en [0, 1]
+    arr = (arr * 255).astype(np.uint8)
+
+    img = Image.fromarray(arr, mode="RGBA")
+    img.save(path)
