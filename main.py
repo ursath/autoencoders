@@ -185,11 +185,11 @@ if __name__ == "__main__":
                             neural_network.train(emoji_values, total_epochs)
                             
                             
-                            #emoji_plot_arr = []
-                            #generated_emoji_values_arr= neural_network.generate(18)
-                            #for emoji_index in range(len(generated_emoji_values_arr)):
-                            #   plot_font_single_emoji(generated_emoji_values_arr[emoji_index], f"{emoji_index}_emoji_b&w_{len(emojis)}_base_gradient_original_{total_epochs}_epochs_logistic.png")
-                            #   emoji_plot_arr.append(generated_emoji_values_arr[emoji_index])
+                            emoji_plot_arr = []
+                            generated_emoji_values_arr= neural_network.generate(len(emoji_values))
+                            for emoji_index in range(len(generated_emoji_values_arr)):
+                               plot_font_single_emoji(generated_emoji_values_arr[emoji_index], f"{emoji_index}_emoji_b&w_{len(emojis)}_base_gradient_original_{total_epochs}_epochs_logistic.png")
+                               emoji_plot_arr.append(generated_emoji_values_arr[emoji_index])
 
                             reconstructed_emojis = []
                             for i in range(len(emoji_values)):
