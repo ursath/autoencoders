@@ -29,7 +29,7 @@ def plot_font_single_emoji(emoji, file_name="generated_emoji.png"):
     plt.savefig(output_path)
     plt.close(fig)
 
-def plot_font_grid_emoji(originals, outputs, pairs_per_row=5):
+def plot_font_grid_emoji(originals, outputs, text, pairs_per_row=5):
 
     cmap = plt.get_cmap('binary')
 
@@ -78,6 +78,6 @@ def plot_font_grid_emoji(originals, outputs, pairs_per_row=5):
         )
 
     plt.tight_layout()
-    output_path = os.path.join("results", f"emoji_grid.png")
+    output_path = os.path.join("results", f"emoji_grid_{text}.png")
     plt.savefig(output_path)
     plt.close(fig)
