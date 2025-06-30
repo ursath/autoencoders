@@ -1,19 +1,19 @@
 {
     "autoencoder": {
 
-      "architecture": [[72, 20, 2, 20, 72]],
-      "X_range": [0, 32 ],
-      "hidden_layers_activation_functions": ["relu"],
+      "architecture": [[1024, 300, 40, 20, 10, 5, 20, 40, 300, 1024]],
+      "X_range": [0, 72],
+      "hidden_layers_activation_functions": ["tanh"],
       "output_layer_activation_function": ["logistic"],
       "optimizer": "adam",
       "error_functions": ["mean_squared_error"],
-      "epochs": [10000],
+      "epochs": [1000],
       "learning_rates": [0.01]
     },
 
     "problem": {
       "name": "variational",
-      "font_data": "font_3",
+      "font_data": "font_2",
       "denoising_options": {
         "noise_level": 0.4,
         "noise_function": "gaussian"
