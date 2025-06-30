@@ -44,7 +44,7 @@ def plot_font_single_emoji(emoji, file_name="generated_emoji.png"):
     plt.close(fig)
     print(f"Emoji guardado en: {output_path}")
 
-def plot_font_grid_emoji(originals, outputs, pairs_per_row=5, original_shape=(16, 16)):
+def plot_font_grid_emoji(originals, outputs, pairs_per_row=5, text=""):
     
     num_pairs = len(originals)
     num_rows = int(np.ceil(num_pairs / pairs_per_row))
@@ -91,11 +91,9 @@ def plot_font_grid_emoji(originals, outputs, pairs_per_row=5, original_shape=(16
             axes[row][col_base].axis('off')
             axes[row][col_base + 1].axis('off')
 
-    plt.tight_layout()
-    
     # Asegurar que el directorio existe
     os.makedirs("results", exist_ok=True)
-    output_path = os.path.join("results", f"emoji_grid_rgba.png")
+    output_path = os.path.join("results", f"emoji_grid_rgba_{text}.png")
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
     plt.close(fig)
     print(f"Grid guardado en: {output_path}")
