@@ -128,9 +128,16 @@ class VariationalAutoencoder:
                 self.backpropagate(x, x_hat, mu, logvar, enc_aj_array, enc_hj_array, dec_aj_array, dec_hj_array, z, std, epsilon)
             print(f"Epoch {epoch + 1} of {epochs}, total_loss: {total_loss:.4f}, reconstruction-loss: {total_reconstruction_loss:.4f}, kl-loss: {total_kl_loss:.4f}")
 
+    def generate_from_specific_samples(self, samples):
+        #making sure the dimension is correct based on the latent dimension defined
+        for sample in samples:
+            if (len(sample) != self.latent_dim):
+                raise ValueError(f"{sample} should match the latent dimension: {self.latent_dim}")
+        generated_outputs, _, _ = self.decode(samples)
+        return generated_outputs
 
-    def generate(self, samples=1):
-        z = np.random.randn(samples, self.latent_dim)
+    def generate_from_random_samples(self, samples_num=1):
+        z = np.random.randn(samples_num, self.latent_dim)
         generated_outputs, _, _ = self.decode(z)
         return generated_outputs
 

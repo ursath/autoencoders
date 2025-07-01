@@ -6,13 +6,15 @@ from vae.vae import VariationalAutoencoder
 from utils.activation_functions import relu, logistic, prime_logistic, relu_derivative, prime_tanh, tanh, softplus, prime_softplus
 from utils.optimizers import rosenblatt_optimizer, gradient_descent_optimizer_with_delta, momentum_gradient_descent_optimizer_with_delta, adam_optimizer_with_delta
 from utils.error_functions import mean_error, squared_error, mean_squared_error
-from plots.latent_space import plot_latent_space
+from plots.latent_space import plot_latent_space, plot_latent_space_2d_scatter
 from utils.noise_functions import gaussian_noise, salt_and_pepper_noise
 from plots.plots import plot_epoch_network_error
 from utils.generate_character import generate_new_character_and_plot
 from fonts.emoji_utils import get__all_font_vectors_emoji, plot_font_grid_emoji, process_folder, rgba_array_to_png, plot_font_single_emoji
 import numpy as np
 import os
+import matplotlib.pyplot as plt
+import re
 
 if __name__ == "__main__":
     
@@ -170,12 +172,19 @@ if __name__ == "__main__":
     encoder_configuration = [1024, 300, 40, 20, 12]
     decoder_configuration = [6, 20, 40, 300, 1024]
     emojis = process_folder("images")     
+    emoji_labels = sorted([
+        re.search(r'-([^.-]+)\.', f).group(1) for f in os.listdir("images")
+        if f.lower().endswith(".png")
+    ])
+    print(f"Entrenamiento con {len(emoji_labels)} emojis:")
+    print(emoji_labels)
+
     emoji_values = emojis[0]
     if problem_type == "variational":
         maX_values_error = 0.001
         learning_rates = [0.001]
         activation_functions = [(softplus, prime_softplus)]
-        epochs = [300]
+        epochs = [100]
         for network_configuration in network_configurations:
             for activation_function in activation_functions:
                 for error_function in error_functions:
@@ -184,12 +193,14 @@ if __name__ == "__main__":
                             neural_network = VariationalAutoencoder(encoder_configuration, decoder_configuration, activation_function[0], activation_function[1], learning_rate)
                             neural_network.train(emoji_values, total_epochs)
                             
-                            
+                            emoji_values = emojis[0]  
+                            #NOTA: cambiar para que este actualizado el nombre!
+                            plot_latent_space_2d_scatter(neural_network, emoji_values, emoji_labels, f"len_{len(emojis)}_gradient_{total_epochs}_epochs_softplus")
                             emoji_plot_arr = []
-                            generated_emoji_values_arr= neural_network.generate(18)
+                            generated_emoji_values_arr= neural_network.generate_from_random_samples(10)
                             for emoji_index in range(len(generated_emoji_values_arr)):
                                 plot_font_single_emoji(generated_emoji_values_arr[emoji_index], f"{emoji_index}_emoji_b&w_{len(emojis)}_base_gradient_original_{total_epochs}_epochs_logistic.png")
                                 emoji_plot_arr.append(generated_emoji_values_arr[emoji_index])
 
-                            plot_font_grid_emoji(emoji_values, generated_emoji_values_arr,5, f"b&w_len_{len(emojis)}_gradient_original_{total_epochs}_epochs_logistic")
+                            plot_font_grid_emoji(emoji_values, generated_emoji_values_arr,5, f"len_{len(emojis)}_gradient_original_{total_epochs}_epochs_logistic")
 
