@@ -183,14 +183,15 @@ if __name__ == "__main__":
     if problem_type == "variational":
         maX_values_error = 0.001
         learning_rates = [0.001]
-        activation_functions = [(softplus, prime_softplus)]
-        epochs = [100]
+        activation_functions = [(tanh, prime_tanh, logistic, prime_logistic)]
+        act_fun = ["tanh","logistic"] # Es solo para el filename
+        epochs = [1000]
         for network_configuration in network_configurations:
             for activation_function in activation_functions:
                 for error_function in error_functions:
                     for learning_rate in learning_rates:
                         for total_epochs in epochs:
-                            neural_network = VariationalAutoencoder(encoder_configuration, decoder_configuration, activation_function[0], activation_function[1], learning_rate)
+                            neural_network = VariationalAutoencoder(encoder_configuration, decoder_configuration, activation_function[0], activation_function[1], activation_function[2], activation_function[3], learning_rate)
                             neural_network.train(emoji_values, total_epochs)
                             
                             emoji_values = emojis[0]  
@@ -199,7 +200,7 @@ if __name__ == "__main__":
                             emoji_plot_arr = []
                             generated_emoji_values_arr= neural_network.generate_from_random_samples(len(emoji_values))
                             for emoji_index in range(len(generated_emoji_values_arr)):
-                               plot_font_single_emoji(generated_emoji_values_arr[emoji_index], f"{emoji_index}_emoji_{len(emojis)}_base_gradient_original_lr_{learning_rate}_{total_epochs}_epochs_logistic.png")
+                               plot_font_single_emoji(generated_emoji_values_arr[emoji_index], f"{emoji_index}_emoji_b&w_{len(emoji_values)}_base_gradient_original_{total_epochs}_epochs_{act_fun[0]}_{act_fun[1]}.png")
                                emoji_plot_arr.append(generated_emoji_values_arr[emoji_index])
 
                             plot_font_grid_emoji(emoji_values, generated_emoji_values_arr,5, f"generated_len_{len(emojis)}_gradient_original_{total_epochs}_epochs_logistic")
@@ -210,4 +211,4 @@ if __name__ == "__main__":
                                 reconstructed_emoji = neural_network.predict(emoji) 
                                 reconstructed_emojis.append(reconstructed_emoji)
 
-                            plot_font_grid_emoji(emoji_values, reconstructed_emojis,5, f"len_{len(emojis)}_gradient_original_{total_epochs}_epochs_logistic_FACE")
+                            plot_font_grid_emoji(emoji_values, reconstructed_emojis,5, f"b&w_len_{len(emoji_values)}_gradient_original_{total_epochs}_epochs_{act_fun[0]}_{act_fun[1]}")
