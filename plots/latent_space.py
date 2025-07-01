@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from autoencoder.neural_network import NeuralNetwork
+from vae.vae import VariationalAutoencoder
 
 folder_path = "results"
 if not os.path.exists(folder_path):
@@ -27,3 +28,24 @@ def plot_latent_space(neural_network: NeuralNetwork, X, labels):
     plt.savefig(output_path)
     plt.close(fig) 
     
+def plot_latent_space_2d_scatter(neural_network, data, labels=None, text=""):
+        mus = []
+        for x in data:
+            x = x[np.newaxis, :]
+            mu, _, _, _ = neural_network.encode(x)
+            mus.append(mu[0])
+
+        mus = np.array(mus)
+
+        plt.figure(figsize=(8, 6))
+        plt.scatter(mus[:, 0], mus[:, 1], alpha=0.6, c='cornflowerblue')
+
+        if labels is not None:
+            for i, label in enumerate(labels):
+                plt.text(mus[i, 0], mus[i, 1], str(label), fontsize=9, ha='center', va='center')
+
+        plt.title("Espacio latente (2D) de las entradas")
+        plt.xlabel("Latente 1")
+        plt.ylabel("Latente 2")
+        plt.grid(True)
+        plt.savefig(f"espacio_latente_para_{text}.png")
