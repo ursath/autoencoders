@@ -120,8 +120,9 @@ class VariationalAutoencoder:
                 x_hat, mu, logvar, enc_aj_array, enc_hj_array, dec_aj_array, dec_hj_array, z, std, epsilon = self.feed_forward(x)
                 kl = self.kl_divergence(mu, logvar)
                 #mse
-                reconstruction_loss = np.mean((x - x_hat) ** 2)
-                loss = reconstruction_loss + kl
+                reconstruction_loss = np.mean((x - x_hat) ** 2) 
+                param_lambda = 1
+                loss = reconstruction_loss + param_lambda * kl
                 total_loss += loss
                 total_kl_loss += kl
                 total_reconstruction_loss +=reconstruction_loss

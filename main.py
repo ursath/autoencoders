@@ -169,8 +169,8 @@ if __name__ == "__main__":
                                     plot_font_grid(X_values, X_values_prime)
 
     #emoji_values = get__all_font_vectors_emoji(emojis)                              
-    encoder_configuration = [1024, 300, 40, 20, 12]
-    decoder_configuration = [6, 20, 40, 300, 1024]
+    encoder_configuration = [1024, 4]
+    decoder_configuration = [2, 1024]
     emojis = process_folder("images")     
     emoji_labels = sorted([
         re.search(r'-([^.-]+)\.', f).group(1) for f in os.listdir("images")
@@ -194,13 +194,20 @@ if __name__ == "__main__":
                             neural_network.train(emoji_values, total_epochs)
                             
                             emoji_values = emojis[0]  
-                            #NOTA: cambiar para que este actualizado el nombre!
-                            plot_latent_space_2d_scatter(neural_network, emoji_values, emoji_labels, f"len_{len(emojis)}_gradient_{total_epochs}_epochs_softplus")
+                            #NOTA: cambiar para que este actualizado el nombre con la funcion de activacion usada!
+                            plot_latent_space_2d_scatter(neural_network, emoji_values, emoji_labels, f"len_{len(emojis)}_gradient_{total_epochs}_epochs_softplus_lr_{learning_rate}")
                             emoji_plot_arr = []
-                            generated_emoji_values_arr= neural_network.generate_from_random_samples(10)
+                            generated_emoji_values_arr= neural_network.generate_from_random_samples(len(emoji_values))
                             for emoji_index in range(len(generated_emoji_values_arr)):
-                                plot_font_single_emoji(generated_emoji_values_arr[emoji_index], f"{emoji_index}_emoji_b&w_{len(emojis)}_base_gradient_original_{total_epochs}_epochs_logistic.png")
-                                emoji_plot_arr.append(generated_emoji_values_arr[emoji_index])
+                               plot_font_single_emoji(generated_emoji_values_arr[emoji_index], f"{emoji_index}_emoji_{len(emojis)}_base_gradient_original_lr_{learning_rate}_{total_epochs}_epochs_logistic.png")
+                               emoji_plot_arr.append(generated_emoji_values_arr[emoji_index])
 
-                            plot_font_grid_emoji(emoji_values, generated_emoji_values_arr,5, f"len_{len(emojis)}_gradient_original_{total_epochs}_epochs_logistic")
+                            plot_font_grid_emoji(emoji_values, generated_emoji_values_arr,5, f"generated_len_{len(emojis)}_gradient_original_{total_epochs}_epochs_logistic")
+                            reconstructed_emojis = []
+                            for i in range(len(emoji_values)):
+                                emoji = emoji_values[i]
+                                emoji = emoji[np.newaxis, :] 
+                                reconstructed_emoji = neural_network.predict(emoji) 
+                                reconstructed_emojis.append(reconstructed_emoji)
 
+                            plot_font_grid_emoji(emoji_values, reconstructed_emojis,5, f"len_{len(emojis)}_gradient_original_{total_epochs}_epochs_logistic_FACE")
