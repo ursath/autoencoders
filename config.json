@@ -1,7 +1,6 @@
 {
     "autoencoder": {
-
-      "architecture": [[1024, 300, 40, 20, 10, 5, 20, 40, 300, 1024]],
+      "architecture": [[1024,4,2,1024]],
       "X_range": [0, 72],
       "hidden_layers_activation_functions": ["tanh"],
       "output_layer_activation_function": ["logistic"],
@@ -19,5 +18,16 @@
         "noise_function": "gaussian"
       }
 
+    },
+
+    "variational_autoencoder": {
+      "encoder_configuration": [1024, 4],
+      "decoder_configuration": [2, 1024],
+      "hidden_layers_activation_functions": ["tanh"],
+      "output_layer_activation_function": ["logistic"],
+      "error_functions": ["mean_squared_error"],
+      "epochs": [1000],
+      "learning_rates": [0.01],
+      "dataset": ["images"]
     }
 }

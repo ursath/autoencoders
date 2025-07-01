@@ -127,7 +127,6 @@ class VariationalAutoencoder:
             total_loss = 0
             total_kl_loss = 0
             total_reconstruction_loss = 0
-            #reconstructed_emojis = []
             for x in dataset:
                 x = x[np.newaxis, :]
                 x_hat, mu, logvar, enc_aj_array, enc_hj_array, dec_aj_array, dec_hj_array, z, std, epsilon = self.feed_forward(x)
@@ -140,8 +139,6 @@ class VariationalAutoencoder:
                 total_kl_loss += kl
                 total_reconstruction_loss +=reconstruction_loss
                 self.backpropagate(x, x_hat, mu, logvar, enc_aj_array, enc_hj_array, dec_aj_array, dec_hj_array, z, std, epsilon)
-                #reconstructed_emojis.append(x_hat)
-            #plot_font_grid_emoji(dataset, reconstructed_emojis, 5, f"b&w_len_{len(dataset)}_gradient_original_{epoch}_epochs_logistic_FACE")
             print(f"Epoch {epoch + 1} of {epochs}, total_loss: {total_loss:.4f}, reconstruction-loss: {total_reconstruction_loss:.4f}, kl-loss: {total_kl_loss:.4f}")
 
     def generate_from_specific_samples(self, samples):
