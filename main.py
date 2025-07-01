@@ -6,7 +6,7 @@ from vae.vae import VariationalAutoencoder
 from utils.activation_functions import relu, logistic, prime_logistic, relu_derivative, prime_tanh, tanh, softplus, prime_softplus
 from utils.optimizers import rosenblatt_optimizer, gradient_descent_optimizer_with_delta, momentum_gradient_descent_optimizer_with_delta, adam_optimizer_with_delta
 from utils.error_functions import mean_error, squared_error, mean_squared_error
-from plots.latent_space import plot_latent_space, plot_latent_space_2d_scatter
+from plots.latent_space import plot_latent_space, plot_latent_space_2d_scatter, sample_latent_space_grid
 from utils.noise_functions import gaussian_noise, salt_and_pepper_noise
 from plots.plots import plot_epoch_network_error
 from utils.generate_character import generate_new_character_and_plot
@@ -185,7 +185,7 @@ if __name__ == "__main__":
         learning_rates = [0.001]
         activation_functions = [(tanh, prime_tanh, logistic, prime_logistic)]
         act_fun = ["tanh","logistic"] # Es solo para el filename
-        epochs = [1000]
+        epochs = [10000]
         for network_configuration in network_configurations:
             for activation_function in activation_functions:
                 for error_function in error_functions:
@@ -193,7 +193,7 @@ if __name__ == "__main__":
                         for total_epochs in epochs:
                             neural_network = VariationalAutoencoder(encoder_configuration, decoder_configuration, activation_function[0], activation_function[1], activation_function[2], activation_function[3], learning_rate)
                             neural_network.train(emoji_values, total_epochs)
-                            
+                            sample_latent_space_grid(neural_network, grid_range=(-3, 3), n_points=20)
                             emoji_values = emojis[0]  
                             #NOTA: cambiar para que este actualizado el nombre con la funcion de activacion usada!
                             plot_latent_space_2d_scatter(neural_network, emoji_values, emoji_labels, f"len_{len(emojis)}_gradient_{total_epochs}_epochs_softplus_lr_{learning_rate}")
@@ -212,3 +212,11 @@ if __name__ == "__main__":
                                 reconstructed_emojis.append(reconstructed_emoji)
 
                             plot_font_grid_emoji(emoji_values, reconstructed_emojis,5, f"b&w_len_{len(emoji_values)}_gradient_original_{total_epochs}_epochs_{act_fun[0]}_{act_fun[1]}")
+
+
+                            # Generar emojis a partir de muestras específicas
+                            #sample = np.array([9.25, 6])
+                            #generated_emoji = neural_network.generate_from_specific_samples(sample)
+                            #plot_font_single_emoji(generated_emoji, f"generated_emoji_from_sample_{sample}_len_{len(emojis)}_gradient_original_{total_epochs}_epochs_{act_fun[0]}_{act_fun[1]}.png")
+
+
