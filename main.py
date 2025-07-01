@@ -171,7 +171,7 @@ if __name__ == "__main__":
     #emoji_values = get__all_font_vectors_emoji(emojis)                              
     encoder_configuration = [1024, 4]
     decoder_configuration = [2, 1024]
-    emojis = process_folder("images")     
+    emojis = process_folder("dataset_2")     
     emoji_labels = sorted([
         re.search(r'-([^.-]+)\.', f).group(1) for f in os.listdir("images")
         if f.lower().endswith(".png")

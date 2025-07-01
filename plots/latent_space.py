@@ -41,8 +41,9 @@ def plot_latent_space_2d_scatter(neural_network, data, labels=None, text=""):
         plt.scatter(mus[:, 0], mus[:, 1], alpha=0.6, c='cornflowerblue')
 
         if labels is not None:
-            for i, label in enumerate(labels):
-                plt.text(mus[i, 0], mus[i, 1], str(label), fontsize=9, ha='center', va='center')
+            n_points = min(len(mus), len(labels))
+            for i in range(n_points):
+                plt.text(mus[i, 0], mus[i, 1], str(labels[i]), fontsize=9, ha='center', va='center')
 
         plt.title("Espacio latente (2D) de las entradas")
         plt.xlabel("Latente 1")
