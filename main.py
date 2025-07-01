@@ -10,7 +10,7 @@ from plots.latent_space import plot_latent_space, plot_latent_space_2d_scatter, 
 from utils.noise_functions import gaussian_noise, salt_and_pepper_noise
 from plots.plots import plot_epoch_network_error
 from utils.generate_character import generate_new_character_and_plot
-from fonts.emoji_utils import get__all_font_vectors_emoji, plot_font_grid_emoji, process_folder, rgba_array_to_png, plot_font_single_emoji
+from fonts.emoji_utils import get__all_font_vectors_emoji, plot_font_grid_emoji, process_folder, rgba_array_to_png, plot_font_single_emoji,plot_generated_grid_emoji
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -193,17 +193,18 @@ if __name__ == "__main__":
                         for total_epochs in epochs:
                             neural_network = VariationalAutoencoder(encoder_configuration, decoder_configuration, activation_function[0], activation_function[1], activation_function[2], activation_function[3], learning_rate)
                             neural_network.train(emoji_values, total_epochs)
-                            sample_latent_space_grid(neural_network, grid_range=(-3, 3), n_points=20)
-                            emoji_values = emojis[0]  
-                            #NOTA: cambiar para que este actualizado el nombre con la funcion de activacion usada!
-                            plot_latent_space_2d_scatter(neural_network, emoji_values, emoji_labels, f"len_{len(emojis)}_gradient_{total_epochs}_epochs_softplus_lr_{learning_rate}")
+                            emoji_values = emojis[0]
+                            if decoder_configuration[0] == 2:
+                                sample_latent_space_grid(neural_network, grid_range=(-3, 3), n_points=20)  
+                                #NOTA: cambiar para que este actualizado el nombre con la funcion de activacion usada!
+                                plot_latent_space_2d_scatter(neural_network, emoji_values, emoji_labels, f"len_{len(emojis)}_gradient_{total_epochs}_epochs_softplus_lr_{learning_rate}")
                             emoji_plot_arr = []
                             generated_emoji_values_arr= neural_network.generate_from_random_samples(len(emoji_values))
                             for emoji_index in range(len(generated_emoji_values_arr)):
                                plot_font_single_emoji(generated_emoji_values_arr[emoji_index], f"{emoji_index}_emoji_b&w_{len(emoji_values)}_base_gradient_original_{total_epochs}_epochs_{act_fun[0]}_{act_fun[1]}.png")
                                emoji_plot_arr.append(generated_emoji_values_arr[emoji_index])
 
-                            plot_font_grid_emoji(emoji_values, generated_emoji_values_arr,5, f"generated_len_{len(emojis)}_gradient_original_{total_epochs}_epochs_logistic")
+                            plot_generated_grid_emoji( generated_emoji_values_arr,5, f"generated_len_{len(emojis)}_gradient_original_{total_epochs}_epochs_logistic")
                             reconstructed_emojis = []
                             for i in range(len(emoji_values)):
                                 emoji = emoji_values[i]

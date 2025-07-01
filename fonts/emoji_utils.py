@@ -98,6 +98,67 @@ def plot_font_grid_emoji(originals, outputs, pairs_per_row=5, text=""):
     plt.close(fig)
     print(f"Grid guardado en: {output_path}")
 
+
+def plot_generated_grid_emoji(outputs, pairs_per_row=5, text=""):
+    
+    num_pairs = len(outputs)  # Usar outputs en lugar de originals
+    num_rows = int(np.ceil(num_pairs / pairs_per_row))
+
+    fig, axes = plt.subplots(
+        num_rows, pairs_per_row,  # Solo una columna por emoji (no *2)
+        figsize=(pairs_per_row * 2, num_rows * 2)  # Ajustar tamaño
+    )
+
+    # Manejar caso de una sola fila
+    if num_rows == 1:
+        if pairs_per_row == 1:
+            axes = np.array([axes])  # Un solo subplot
+        else:
+            axes = np.expand_dims(axes, axis=0)
+
+    for idx, reconstructed in enumerate(outputs):
+        row = idx // pairs_per_row
+        col = idx % pairs_per_row
+
+        # Si los datos están aplanados, redimensionar a (16, 16, 4)
+        if reconstructed.ndim == 1:
+            reconstructed_img = reconstructed.reshape(16, 16, 4)
+        else:
+            reconstructed_img = reconstructed
+
+        # Asegurar que los valores estén en [0, 1]
+        reconstructed_img = np.clip(reconstructed_img, 0, 1)
+
+        # Mostrar solo el output
+        if num_rows == 1 and pairs_per_row == 1:
+            axes[0].imshow(reconstructed_img)
+            axes[0].axis('off')
+        elif num_rows == 1:
+            axes[0][col].imshow(reconstructed_img)
+            axes[0][col].axis('off')
+        else:
+            axes[row][col].imshow(reconstructed_img)
+            axes[row][col].axis('off')
+
+    # Ocultar axes vacíos si los hay
+    for idx in range(num_pairs, num_rows * pairs_per_row):
+        row = idx // pairs_per_row
+        col = idx % pairs_per_row
+        if row < num_rows and col < pairs_per_row:
+            if num_rows == 1:
+                axes[0][col].axis('off')
+            else:
+                axes[row][col].axis('off')
+
+    plt.tight_layout()
+
+    # Asegurar que el directorio existe
+    os.makedirs("results/a1_d1", exist_ok=True)
+    output_path = os.path.join("results/a1_d1", f"emoji_grid_rgba_{text}.png")
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
+    plt.close(fig)
+    print(f"Grid guardado en: {output_path}")
+
 def process_folder(
     input_folder: str,
     output_size: Tuple[int, int] = (16, 16),
