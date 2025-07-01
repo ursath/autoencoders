@@ -1,11 +1,13 @@
 import numpy as np
 
 class VariationalAutoencoder:
-    def __init__(self, encoder_layers_neurons, decoder_layers_neurons, activation_function, activation_derivative, learning_rate=0.001):
+    def __init__(self, encoder_layers_neurons, decoder_layers_neurons, activation_function, activation_derivative, output_layer_activation_function, output_layer_activation_derivative, learning_rate=0.001):
         self.encoder_layers_neurons = encoder_layers_neurons
         self.decoder_layers_neurons = decoder_layers_neurons
         self.activation_function = activation_function
         self.prime_activation_function = activation_derivative
+        self.output_layer_activation_function = output_layer_activation_function
+        self.output_layer_activation_derivative = output_layer_activation_derivative
         # move to train function
         self.learning_rate = learning_rate
 
@@ -26,14 +28,18 @@ class VariationalAutoencoder:
     def layer_forward(self, x, weights_matrixes):
         a_j_array = [x]
         h_j_array = []
+        matrix_index = 0
         for w_matrix in weights_matrixes:
             x_with_bias = self.add_bias_row(a_j_array[-1])
             h_j = x_with_bias @ w_matrix
 
             h_j_array.append(h_j)
-
-            a_j = self.activation_function(h_j)
+            if matrix_index == len(weights_matrixes) - 1:
+                a_j = self.output_layer_activation_function(h_j)
+            else:
+                a_j = self.activation_function(h_j)
             a_j_array.append(a_j)
+            matrix_index += 1
         return a_j_array, h_j_array
 
     # calculating deltas
@@ -44,7 +50,10 @@ class VariationalAutoencoder:
         delta = first_delta
 
         for i in reversed(range(len(weights))):
-            act_deriv = self.prime_activation_function(pre_activations[i])
+            if i == len(weights) - 1:
+                act_deriv = self.output_layer_activation_derivative(pre_activations[i])
+            else:
+                act_deriv = self.prime_activation_function(pre_activations[i])
             delta = delta * act_deriv  
             x_with_bias = self.add_bias_row(activations[i])
             deltas[i] = x_with_bias.T @ delta
@@ -87,7 +96,10 @@ class VariationalAutoencoder:
         delta = d_x_hat
         dz = 0
         for j in reversed(range(len(self.decoder_weights))):
-            derivative = self.prime_activation_function(dec_hj_array[j])
+            if j == len(self.decoder_weights) - 1:
+                derivative = self.output_layer_activation_derivative(dec_hj_array[j])
+            else:
+                derivative = self.prime_activation_function(dec_hj_array[j])
             delta = delta * derivative
             delta = delta @ self.decoder_weights[j][:-1, :].T
 
@@ -115,20 +127,22 @@ class VariationalAutoencoder:
             total_loss = 0
             total_kl_loss = 0
             total_reconstruction_loss = 0
+            #reconstructed_emojis = []
             for x in dataset:
                 x = x[np.newaxis, :]
                 x_hat, mu, logvar, enc_aj_array, enc_hj_array, dec_aj_array, dec_hj_array, z, std, epsilon = self.feed_forward(x)
                 kl = self.kl_divergence(mu, logvar)
                 #mse
                 reconstruction_loss = np.mean((x - x_hat) ** 2) 
-                param_lambda = 1
+                param_lambda = 0.01
                 loss = reconstruction_loss + param_lambda * kl
                 total_loss += loss
                 total_kl_loss += kl
                 total_reconstruction_loss +=reconstruction_loss
                 self.backpropagate(x, x_hat, mu, logvar, enc_aj_array, enc_hj_array, dec_aj_array, dec_hj_array, z, std, epsilon)
+                #reconstructed_emojis.append(x_hat)
+            #plot_font_grid_emoji(dataset, reconstructed_emojis, 5, f"b&w_len_{len(dataset)}_gradient_original_{epoch}_epochs_logistic_FACE")
             print(f"Epoch {epoch + 1} of {epochs}, total_loss: {total_loss:.4f}, reconstruction-loss: {total_reconstruction_loss:.4f}, kl-loss: {total_kl_loss:.4f}")
-
 
     def generate(self, samples=1):
         z = np.random.randn(samples, self.latent_dim)
@@ -138,3 +152,4 @@ class VariationalAutoencoder:
     def predict(self, x):
         x_hat, _, _, _, _, _, _, _, _, _= self.feed_forward(x)
         return x_hat
+

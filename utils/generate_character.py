@@ -1,5 +1,6 @@
 import numpy as np
 from fonts.utils import plot_font_single
+from fonts.emoji_utils import plot_font_single_emoji,plot_font_grid_emoji
 from autoencoder.neural_network import NeuralNetwork
 
 def generate_new_character_and_plot(neural_network: NeuralNetwork):
@@ -27,8 +28,8 @@ def generate_new_character_and_plot(neural_network: NeuralNetwork):
                         print("❌ Invalid input.")
 
                 new_character = neural_network.decode_from_latent(latent_vector)
-                plot_font_single(new_character, f"generated_char_{latent_vector[0]:.2f}_{latent_vector[1]:.2f}")
-
+                #plot_font_single(new_character, f"generated_char_{latent_vector[0]:.2f}_{latent_vector[1]:.2f}")
+                plot_font_single_emoji(new_character, f"generated_emoji_{latent_vector[0]:.2f}_{latent_vector[1]:.2f}")
                 while True:
                     generate_more = input("Do you want to generate another character? (yes/no): ").strip().lower()
                     if generate_more in {"yes", "no"}:
