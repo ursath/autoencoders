@@ -81,14 +81,14 @@ if __name__ == "__main__":
     font_init_char = fonts_init_char_map[problem_config['font_data']]
 
     variational_autoencoder_config = config['variational_autoencoder']
-    encoder_configuration = variational_autoencoder_config['encoder_configuration']
-    decoder_configuration = variational_autoencoder_config['decoder_configuration']
-    activation_functions = [activation_functions_map[name] for name in autoencoder_config['hidden_layers_activation_functions']]
-    output_layer_activation_functions = [activation_functions_map[name] for name in autoencoder_config['output_layer_activation_function']]
-    error_functions = [error_functions_map[name] for name in autoencoder_config['error_functions']]
-    epochs = autoencoder_config['epochs']
-    learning_rates = autoencoder_config['learning_rates']
-    datasets = variational_autoencoder_config['dataset']
+    vae_encoder_configuration = variational_autoencoder_config['encoder_configuration']
+    vae_decoder_configuration = variational_autoencoder_config['decoder_configuration']
+    vae_activation_functions = [activation_functions_map[name] for name in autoencoder_config['hidden_layers_activation_functions']]
+    vae_output_layer_activation_functions = [activation_functions_map[name] for name in autoencoder_config['output_layer_activation_function']]
+    vae_error_functions = [error_functions_map[name] for name in autoencoder_config['error_functions']]
+    vae_epochs = variational_autoencoder_config['epochs']
+    vae_learning_rates = variational_autoencoder_config['learning_rates']
+    vae_datasets = variational_autoencoder_config['dataset']
 
     # Definición de X_values y target_values según el tipo de problema
 
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     if problem_type == "variational":
         maX_values_error = 0.001
         
-        for dataset in datasets:
+        for dataset in vae_datasets:
             emoji_labels = sorted([
             re.search(r'-([^.-]+)\.', f).group(1) for f in os.listdir(dataset)
             if f.lower().endswith(".png")
@@ -187,15 +187,15 @@ if __name__ == "__main__":
             print(emoji_labels)
             target_values = process_folder(dataset)
             emoji_values = target_values[0] 
-            
-            for activation_function in activation_functions:
-                for output_layer_activation_function in output_layer_activation_functions:
-                    for error_function in error_functions:
-                        for learning_rate in learning_rates:
-                            for total_epochs in epochs:
-                                neural_network = VariationalAutoencoder(encoder_configuration, decoder_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0], output_layer_activation_function[1], learning_rate)
+        
+            for activation_function in vae_activation_functions:
+                for output_layer_activation_function in vae_output_layer_activation_functions:
+                    for error_function in vae_error_functions:
+                        for learning_rate in vae_learning_rates:
+                            for total_epochs in vae_epochs:
+                                neural_network = VariationalAutoencoder(vae_encoder_configuration, vae_decoder_configuration, activation_function[0], activation_function[1], output_layer_activation_function[0], output_layer_activation_function[1], learning_rate)
                                 neural_network.train(emoji_values, total_epochs)
-                                if decoder_configuration[0] == 2:
+                                if vae_decoder_configuration[0] == 2:
                                     sample_latent_space_grid(neural_network, grid_range=(-3, 3), n_points=20)  
                                     plot_latent_space_2d_scatter(neural_network, emoji_values, emoji_labels, f"len_{len(emojis)}_gradient_{total_epochs}_epochs_softplus_lr_{learning_rate}")
                                 emoji_plot_arr = []
